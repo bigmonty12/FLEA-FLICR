@@ -18,11 +18,8 @@ ui <- dashboardPage(
       tabItem(tabName = "preprocessing",
               fluidRow(
                 box(fileInput("fin", "Select Raw FLIC file", accept = c('text/csv', '.csv')),
-                    actionButton("submitButton", "Submit"),
+                    actionButton("submitButton", "Submit and View Wells"),
                     width = 5)),
-                # box(textInput("solutionA", "Solution A"),
-                #     textInput("solutionB", "Solution B"),
-                #     width = 4)),
               conditionalPanel(
                 condition = "input.submitButton > 0",
                 fluidRow(
@@ -33,21 +30,45 @@ ui <- dashboardPage(
                 condition = "input.subtractButton > 0",
                 fluidRow(
                   box(plotOutput("baselinePlots"), width = 12,
-                      actionButton("removeBlipsButton", "Remove Blips & Analyze"))),
+                      actionButton("removeBlipsButton", "Remove Blips")))),
+              conditionalPanel(
+                condition = "input.removeBlipsButton > 0",
+                fluidRow(
+                  box(plotOutput("removedBlipsPlots"), width = 12)
+                ),
                 fluidRow(
                   box(checkboxGroupInput("whichWells", "Wells to keep for analysis:",
-                                         names, selected = names),
-                      width = 2),
-                  box(
-                    textInput("solutionA", "Solution A"),
-                    textInput("solutionB", "Solution B"),
-                    width = 4
-                  )
-              ))),
+                                         names, selected = names, inline = TRUE),
+                      actionButton("selectWellsButton", "Select Wells and Go to Analysis"),
+                      width = 12
+                      )
+                ))),
       tabItem(tabName = "analysis",
               h2("Analysis"),
               fluidRow(
-                box(textOutput("text"), width = 12)
+                # box(
+                #   textInput("solutionA", "Solution A"),
+                #   textInput("solutionB", "Solution B"),
+                #   width = 5
+                # ),
+                  box(
+                    numericInput("numTypes", "Number of genotypes/phenotypes", value = 2),
+                    uiOutput("types", inline = TRUE),
+                    actionButton("describeWellsButton", "Assign Wells"),
+                    width = 7)
+              ),
+              conditionalPanel(
+                condition = "input.describeWellsButton > 0",
+                fluidRow(
+                  box(
+                    uiOutput("well1"),
+                    uiOutput("well2"),
+                    uiOutput("well3"),
+                    uiOutput("well4"),
+                    uiOutput("well5"),
+                    uiOutput("well6")
+                  )
+                )
               ))
     )
   )
@@ -97,6 +118,12 @@ server <- function(input, output, session){
     subtractBaselines <- wells - baselines
   })
   
+  removeBlips <- reactive({
+    subtractBaselines <- subtractBaseline()
+    subtractBaselines[subtractBaselines < 10] <- 0
+    subtractBaselines
+  })
+  
   output$rawPlots <- renderPlot({
     goOnFile()
     wells <- getRawWells()
@@ -120,19 +147,91 @@ server <- function(input, output, session){
         time_df, subtractBaselines, names(subtractBaselines))
   })
   
-  observeEvent(input$removeBlipsButton, {
-    updateTabItems(session, "tabs", "analysis")
-  })
+  # observeEvent(input$removeBlipsButton, {
+  #   updateTabItems(session, "tabs", "analysis")
+  # })
   
   goOnBlips <- eventReactive(input$removeBlipsButton, {
     input$fin
   })
   
-  output$text <- renderText({
+  goOnSelectWells <- eventReactive(input$selectWellsButton, {
+    input$fin
+  })
+  
+  output$removedBlipsPlots <- renderPlot({
     goOnBlips()
+    removeBlips <- removeBlips()
+    time_df <- makeTimeDF()
+    
+    par(mfcol = c(2, 6))
+    Map(function(x,y,z) plot(x, y=y, main=z, col="forestgreen", type="l", xlab="Time [min]", ylab="Intensity [au]"),
+        time_df, removeBlips, names(removeBlips))
+  })
+  
+  # output$text <- renderText({
+  #   goOnBlips()
+  #   updateTabItems(session, "tabs", "analysis")
+  #   whichWells <- paste(input$whichWells, collapse=", ")
+  #   paste("Wells to be analyzed:", whichWells)
+  # })
+  
+  observeEvent(input$selectWellsButton, {
     updateTabItems(session, "tabs", "analysis")
-    whichWells <- paste(input$whichWells, collapse=", ")
-    paste("Wells to be analyzed:", whichWells)
+  })
+  
+  findNumTypes <- reactive({
+    numTypes <- as.integer(input$numTypes)
+  })
+  
+  output$types <- renderUI({
+    numTypes <- findNumTypes()
+    lapply(1:numTypes, function(i) {
+      textInput(inputId = paste0("type", i), 
+                label = paste("Genotype/Phenotype #", i))
+    })
+  })
+
+  numTypesList <- reactive({
+    numTypes <- findNumTypes()
+    types <- list()
+    lapply(1:numTypes, function(i) {
+      types[paste0('type', i)] <- input[[paste0('type', i)]]
+    })
+  })
+  
+  eventReactive(input$describeWellsButton, {
+    input$fin
+  })
+  
+  output$well1 <- renderUI({
+    types <- numTypesList()
+    selectInput("well1", "Well 1", choices = types)
+  })
+  
+  output$well2 <- renderUI({
+    types <- numTypesList()
+    selectInput("well2", "Well 2", choices = types)
+  })
+  
+  output$well3 <- renderUI({
+    types <- numTypesList()
+    selectInput("well3", "Well 3", choices = types)
+  })
+  
+  output$well4 <- renderUI({
+    types <- numTypesList()
+    selectInput("well4", "Well 4", choices = types)
+  })
+  
+  output$well5 <- renderUI({
+    types <- numTypesList()
+    selectInput("well5", "Well 5", choices = types)
+  })
+  
+  output$well6 <- renderUI({
+    types <- numTypesList()
+    selectInput("well6", "Well 6", choices = types)
   })
 }
 shinyApp(ui = ui, server = server)
