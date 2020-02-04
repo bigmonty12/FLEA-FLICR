@@ -10,7 +10,8 @@ ui <- dashboardPage(
     sidebarMenu(
       id = "tabs",
       menuItem("Preprocess Data", tabName = "preprocessing", icon = icon("warehouse")),
-      menuItem("Analysis", tabName = "analysis", icon = icon("calculator"))
+      menuItem("Analysis", tabName = "analysis", icon = icon("calculator")),
+      menuItem("Results", tabName = "results", icon = icon("book"))
     )
   ),
   dashboardBody(
@@ -24,17 +25,20 @@ ui <- dashboardPage(
                 condition = "input.submitButton > 0",
                 fluidRow(
                   box(plotOutput("rawPlots"), width = 12,
-                      actionButton("subtractButton", "Subtract Baseline")))
+                      actionButton("subtractButton", "Subtract Baseline"),
+                      downloadButton("downloadRawPlots", "Download Plots")))
               ),
               conditionalPanel(
                 condition = "input.subtractButton > 0",
                 fluidRow(
                   box(plotOutput("baselinePlots"), width = 12,
-                      actionButton("removeBlipsButton", "Remove Blips")))),
+                      actionButton("removeBlipsButton", "Remove Blips"),
+                      downloadButton("downloadSubtracted", "Download Plots")))),
               conditionalPanel(
                 condition = "input.removeBlipsButton > 0",
                 fluidRow(
-                  box(plotOutput("removedBlipsPlots"), width = 12)
+                  box(plotOutput("removedBlipsPlots"), width = 12,
+                      downloadButton("downloadRemovedBlips", "Download Plots"))
                 ),
                 fluidRow(
                   box(checkboxGroupInput("whichWells", "Wells to keep for analysis:",
@@ -46,11 +50,6 @@ ui <- dashboardPage(
       tabItem(tabName = "analysis",
               h2("Analysis"),
               fluidRow(
-                # box(
-                #   textInput("solutionA", "Solution A"),
-                #   textInput("solutionB", "Solution B"),
-                #   width = 5
-                # ),
                   box(
                     numericInput("numTypes", "Number of genotypes/phenotypes", value = 2),
                     uiOutput("types", inline = TRUE),
@@ -66,7 +65,19 @@ ui <- dashboardPage(
                     uiOutput("well3"),
                     uiOutput("well4"),
                     uiOutput("well5"),
-                    uiOutput("well6")
+                    uiOutput("well6"),
+                    actionButton("inputSolutionsButton", "Input Solutions")
+                  )
+                )
+              ),
+              conditionalPanel(
+                condition = "input.inputSolutionsButton > 0",
+                fluidRow(
+                  box(
+                    textInput("solutionA", "Solution A"),
+                    textInput("solutionB", "Solution B"),
+                    width = 5,
+                    actionButton("analyzeDataButton", "Analyze Data")
                   )
                 )
               ))
