@@ -50,14 +50,30 @@ removeBlips <- reactive({
   subtractBaselines
 })
 
-output$rawPlots <- renderPlot({
-  goOnFile()
+plotRaw <- function(){
   wells <- getRawWells()
   time_df <- makeTimeDF()
   par(mfcol = c(2, 6))
   Map(function(x,y,z) plot(x, y=y, main=z, col="red", type="l", xlab="Time [min]", ylab="Intensity [au]"),
       time_df, wells, names(wells))
+}
+
+output$rawPlots <- renderPlot({
+  goOnFile()
+  rawPlots <- plotRaw()
+  rawPlots
 })
+
+output$downloadRawPlots <- downloadHandler(
+  filename = function() {
+    file = "rawPlots.png"
+  },
+  content = function(file){
+    png(file=file, height = 480*1.5, width = 480*3)
+    plotRaw()
+    dev.off()
+  }
+)
 
 goOnSubtract <- eventReactive(input$subtractButton, {
   input$fin
