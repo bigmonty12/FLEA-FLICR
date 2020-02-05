@@ -1,3 +1,5 @@
+# FLIC app created by Austin Montgomery
+# Feb 2020
 library(shiny)
 library(shinydashboard)
 options(shiny.maxRequestSize=50*1024^2) 

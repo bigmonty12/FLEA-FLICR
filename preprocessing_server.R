@@ -1,6 +1,7 @@
 # preprocessing_server.R
 # Preprocessing tab of Shiny app
 
+#====Functions used on input file====
 inFile <- reactive(input$fin)
 
 goOnFile <- eventReactive(input$submitButton, {
@@ -19,6 +20,28 @@ readFile <- reactive({
   })
 })
 
+fileName <- reactive({
+  rawFile <- input$fin
+  fileName <- stringi::stri_extract_first(str = rawFile$name, regex = ".*(?=\\.)")
+  fileName
+})
+#====Button pressing functions====
+goOnSubtract <- eventReactive(input$subtractButton, {
+  input$fin
+})
+
+goOnBlips <- eventReactive(input$removeBlipsButton, {
+  input$fin
+})
+
+goOnSelectWells <- eventReactive(input$selectWellsButton, {
+  input$fin
+})
+
+observeEvent(input$selectWellsButton, {
+  updateTabItems(session, "tabs", "analysis")
+})
+#====Functions used for plotting====
 makeTimeDF <- reactive({
   fin <- readFile()
   # Create "Time" dataframe to use as x-axis in minutes
@@ -46,27 +69,56 @@ subtractBaseline <- reactive({
 
 removeBlips <- reactive({
   subtractBaselines <- subtractBaseline()
+  # Convert all values < 10 to zero
   subtractBaselines[subtractBaselines < 10] <- 0
   subtractBaselines
 })
 
-plotRaw <- function(){
-  wells <- getRawWells()
+plotwells <- function(a, b){
+  data <- a()
   time_df <- makeTimeDF()
   par(mfcol = c(2, 6))
-  Map(function(x,y,z) plot(x, y=y, main=z, col="red", type="l", xlab="Time [min]", ylab="Intensity [au]"),
-      time_df, wells, names(wells))
+  Map(function(x, y, z) plot(x, y=y, main=z, col=b, type="l",
+                             xlab="Time [min]", ylab="Intensity [au]"),
+      time_df, data, names(data))
 }
 
+plotRaw <- function(){
+  plots <- plotwells(getRawWells, "red")
+  plots
+}
+
+plotBaseline <- function(){
+  plots <- plotwells(subtractBaseline, "blue")
+  plots
+}
+
+plotRemovedBlips <- function(){
+  plots <- plotwells(removeBlips, "forestgreen")
+  plots
+}
+#====Render plots====
 output$rawPlots <- renderPlot({
   goOnFile()
   rawPlots <- plotRaw()
   rawPlots
 })
 
+output$baselinePlots <- renderPlot({
+  goOnSubtract()
+  baselinePlots <- plotBaseline()
+  baselinePlots
+})
+
+output$removedBlipsPlots <- renderPlot({
+  goOnBlips()
+  removedBlips <- plotRemovedBlips()
+  removedBlips
+})
+#====Download plots====
 output$downloadRawPlots <- downloadHandler(
   filename = function() {
-    file = "rawPlots.png"
+    file = paste0("rawPlots_", fileName(), ".png")
   },
   content = function(file){
     png(file=file, height = 480*1.5, width = 480*3)
@@ -75,38 +127,24 @@ output$downloadRawPlots <- downloadHandler(
   }
 )
 
-goOnSubtract <- eventReactive(input$subtractButton, {
-  input$fin
-})
+output$downloadSubtracted <- downloadHandler(
+  filename = function() {
+    file = paste0("baselinePlots_", fileName(), ".png")
+  },
+  content = function(file){
+    png(file=file, height = 480*1.5, width = 480*3)
+    plotBaseline()
+    dev.off()
+  }
+)
 
-output$baselinePlots <- renderPlot({
-  goOnSubtract()
-  subtractBaselines <- subtractBaseline()
-  time_df <- makeTimeDF()
-  
-  par(mfcol = c(2, 6))
-  Map(function(x,y,z) plot(x, y=y, main=z, col="blue", type="l", xlab="Time [min]", ylab="Intensity [au]"),
-      time_df, subtractBaselines, names(subtractBaselines))
-})
-
-goOnBlips <- eventReactive(input$removeBlipsButton, {
-  input$fin
-})
-
-goOnSelectWells <- eventReactive(input$selectWellsButton, {
-  input$fin
-})
-
-output$removedBlipsPlots <- renderPlot({
-  goOnBlips()
-  removeBlips <- removeBlips()
-  time_df <- makeTimeDF()
-  
-  par(mfcol = c(2, 6))
-  Map(function(x,y,z) plot(x, y=y, main=z, col="forestgreen", type="l", xlab="Time [min]", ylab="Intensity [au]"),
-      time_df, removeBlips, names(removeBlips))
-})
-
-observeEvent(input$selectWellsButton, {
-  updateTabItems(session, "tabs", "analysis")
-})
+output$downloadRemovedBlips <- downloadHandler(
+  filename = function() {
+    file = paste0("removedBlipsPlots_", fileName(), ".png")
+  },
+  content = function(file){
+    png(file=file, height = 480*1.5, width = 480*3)
+    plotRemovedBlips()
+    dev.off()
+  }
+)
