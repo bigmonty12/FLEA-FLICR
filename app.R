@@ -4,6 +4,8 @@ library(shiny)
 library(shinydashboard)
 options(shiny.maxRequestSize=50*1024^2) 
 library(ggplot2)
+library(tidyverse)
+library(DT)
 names <- c("1A", "1B", "2A", "2B", "3A", "3B", "4A", "4B", "5A", "5B", "6A", "6B")
 
 ui <- dashboardPage(
@@ -20,7 +22,8 @@ ui <- dashboardPage(
   dashboardBody(
     tabItems(
       source("preprocessing_ui.R", local = TRUE)$value,
-      source("analysis_ui.R", local = TRUE)$value
+      source("analysis_ui.R", local = TRUE)$value,
+      source("results_ui.R", local = TRUE)$value
     )
   )
 )
@@ -29,6 +32,7 @@ server <- function(input, output, session){
 
   source("preprocessing_server.R", local = TRUE)$value  
   source("analysis_server.R", local = TRUE)$value
+  source("results_server.R", local = TRUE)$value
 }
 
 shinyApp(ui = ui, server = server)

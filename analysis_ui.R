@@ -34,8 +34,5 @@ tabItem(tabName = "analysis",
               actionButton("analyzeDataButton", "Analyze Data")
             )
           )
-        ),
-        conditionalPanel(
-          condition = "input.analyzeDataButton > 0"
         )
 )
