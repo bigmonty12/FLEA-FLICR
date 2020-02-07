@@ -31,6 +31,7 @@ tabItem(tabName = "analysis",
               textInput("solutionA", "Solution A"),
               textInput("solutionB", "Solution B"),
               selectInput("aversive", "Aversive Compound", c("A", "B"), selected = "B"),
+              numericInput("length", "How many minutes to analyze?", value=30),
               width = 5,
               actionButton("analyzeDataButton", "Analyze Data")
             )
