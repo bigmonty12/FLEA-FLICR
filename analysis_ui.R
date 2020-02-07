@@ -30,6 +30,7 @@ tabItem(tabName = "analysis",
             box(
               textInput("solutionA", "Solution A"),
               textInput("solutionB", "Solution B"),
+              selectInput("aversive", "Aversive Compound", c("A", "B"), selected = "B"),
               width = 5,
               actionButton("analyzeDataButton", "Analyze Data")
             )

@@ -163,9 +163,15 @@ analyzedPreference <- reactive({
   analyzedEvents <- analyzedEvents()
   preferences <- analyzePreference(analyzedEvents)
   preferences <- as.data.frame(do.call(rbind, preferences))
+  preferences = data.frame(lapply(preferences, as.numeric))
+  
+  if (input$aversive == "A"){
+    preferences <- preferences * -1
+  }
   preferences['Condition'] <- c(input$well1, input$well2, input$well3,
                                 input$well4, input$well5, input$well6)
   preferences <- preferences %>% dplyr::select(Condition, everything())
+  
   preferences
 })
 
