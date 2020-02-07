@@ -62,18 +62,26 @@ editEvents <- function(x) {
 
 #==== Remove data until first event of the arena ==== 
 removeUntilFirstEvent <- function(x){
-  df <- data.frame(matrix(0, nrow = 9000, ncol = 12))
+  l <- input$length
+  rows <- l * 60 * 5
+  df <- data.frame(matrix(0, nrow = rows, ncol = 12))
   for (i in seq(1, 11, 2)) {
     # Time of first event in arena
     m <- min(rle(x[[i]])$lengths[1], rle(x[[i+1]])$lengths[1])
     # Length of analysis min(30 minutes and remain length after removal until first event)
-    l <- min(9000, length(tail(x[[i]], -m)))
+    l <- min(rows, length(tail(x[[i]], -m)))
     
     df[[i]] <- head(tail(x[[i]], -m), l)
     df[[i+1]] <- head(tail(x[[i+1]], -m), l)
   }
   colnames(df) <- names
   return(df)
+}
+
+timeAnalyzed <- function(x){
+  rows <- length(x[[1]])
+  mins <- rows / 300
+  return(mins)
 }
 
 analyzeEvents <- function(x) {
@@ -154,6 +162,7 @@ analyzedEvents <- reactive({
                                 paste0(input$well6, ": ", input$solutionA), 
                                 paste0(input$well6, ": ", input$solutionB)
                                 )
+  analyzedEvents['Minutes.Analyzed'] <- rep(timeAnalyzed(removedUntilFirstEvent), 12)
   analyzedEvents['Well'] <- names
   analyzedEvents <- analyzedEvents %>% dplyr::select(Well, Condition, everything())
   analyzedEvents
@@ -163,9 +172,15 @@ analyzedPreference <- reactive({
   analyzedEvents <- analyzedEvents()
   preferences <- analyzePreference(analyzedEvents)
   preferences <- as.data.frame(do.call(rbind, preferences))
+  preferences = data.frame(lapply(preferences, as.numeric))
+  
+  if (input$aversive == "A"){
+    preferences <- preferences * -1
+  }
   preferences['Condition'] <- c(input$well1, input$well2, input$well3,
                                 input$well4, input$well5, input$well6)
   preferences <- preferences %>% dplyr::select(Condition, everything())
+  
   preferences
 })
 
