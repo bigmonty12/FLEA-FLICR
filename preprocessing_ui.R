@@ -8,19 +8,29 @@ tabItem(tabName = "preprocessing",
               width = 5)),
         conditionalPanel(
           condition = "input.submitButton > 0",
+          h2("Raw Plots"),
           fluidRow(
             box(plotOutput("rawPlots"), width = 12,
-                actionButton("subtractButton", "Subtract Baseline"),
+                actionButton("findButton", "Find Baseline"),
                 downloadButton("downloadRawPlots", "Download Plots")))
         ),
         conditionalPanel(
-          condition = "input.subtractButton > 0",
+          condition = "input.findButton > 0",
+          h2("Baseline Drawn"),
           fluidRow(
             box(plotOutput("baselinePlots"), width = 12,
+                actionButton("subtractButton", "Subtract Baseline"),
+                downloadButton("downloadBaseline", "Download Plots")))),
+        conditionalPanel(
+          condition = "input.subtractButton > 0",
+          h2("Baseline Subtracted"),
+          fluidRow(
+            box(plotOutput("subtractBaselinePlots"), width = 12,
                 actionButton("removeBlipsButton", "Remove Blips"),
                 downloadButton("downloadSubtracted", "Download Plots")))),
         conditionalPanel(
           condition = "input.removeBlipsButton > 0",
+          h2("Blips Removed"),
           fluidRow(
             box(plotOutput("removedBlipsPlots"), width = 12,
                 downloadButton("downloadRemovedBlips", "Download Plots"))

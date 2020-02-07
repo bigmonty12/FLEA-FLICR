@@ -1,7 +1,7 @@
 library(tidyverse)
 
 fin <- read.csv("012920_DFM_5.csv")
-
+fin <- read.csv("../../../FLIC-FLEA/191003 DFM_14.csv")
 # Create dataframe with metadata
 metadata <- fin[1:4]
 # Create dataframe with only well readings
@@ -18,7 +18,14 @@ time <- seq_len(length(wells[[1]])) / 300
 time_df <- data.frame(a=time, b=time, c=time, d=time, e=time, f=time, g=time, h=time, i=time, j=time, k=time, l=time)
 dev.off()
 par(mfcol = c(2, 6))
+plot_baselines <- function(x, y, z, baseline){
+  plot(x, y=y, main=z, col="red", type="l", xlab="Time [min]", ylab="Intensity [au]")
+  print(length(x))
+  lines(x = x, y = baseline, lwd=2, col="blue")
+}
+Map(plot_baselines, time_df, wells, names(wells), baselines)
 Map(function(x,y) plot(x, main =y, col="red", type="l"), wells, names(wells))
+Map(function(x) lines(x, lwd=2, col="blue"), baselines)
 Map(function(x,y) plot(x, main =y, col="blue", type="l"), subtractBaselines, names(subtractBaselines))
 Map(function(x,y,z) plot(x, y=y, main =z, col="blue", type="l"), time_df, subtractBaselines, names(subtractBaselines))
 

@@ -26,6 +26,10 @@ fileName <- reactive({
   fileName
 })
 #====Button pressing functions====
+goOnFind <- eventReactive(input$findButton, {
+  input$fin
+})
+
 goOnSubtract <- eventReactive(input$subtractButton, {
   input$fin
 })
@@ -56,14 +60,19 @@ getRawWells <- reactive({
   wells
 })
 
-subtractBaseline <- reactive({
+findBaseline <- reactive({
   wells <- getRawWells()
   # Use running median to find baseline for each well
   n <- length(wells[[1]])
   k <- (1 + 2 * min((n-1)%/% 2, ceiling(0.1*n))) # Turlach default for k
   m <- min(k, 24001)
   baselines <- lapply(wells, runmed, k=m)
-  # Subtract baseline from each well and change any negative values to 0
+  baselines
+})
+
+subtractBaseline <- reactive({
+  wells <- getRawWells()
+  baselines <- findBaseline()
   subtractBaselines <- wells - baselines
 })
 
@@ -74,13 +83,31 @@ removeBlips <- reactive({
   subtractBaselines
 })
 
-plotwells <- function(a, b){
+plotData <- function(x, y, z, col){
+  plot(x, y=y, main=z, col=col, type="l",
+       xlab="Time [min]", ylab="Intensity [au]")
+}
+
+plotDataAndLine <- function(x, y, z, col, baseline){
+  plot(x, y=y, main=z, col=col, type="l",
+       xlab="Time [min]", ylab="Intensity [au]")
+  lines(x=x, y=baseline, lwd=2, col="blue")
+}
+
+plotwells <- function(a, col, plotLine=FALSE){
   data <- a()
   time_df <- makeTimeDF()
   par(mfcol = c(2, 6))
-  Map(function(x, y, z) plot(x, y=y, main=z, col=b, type="l",
-                             xlab="Time [min]", ylab="Intensity [au]"),
-      time_df, data, names(data))
+  if (plotLine==FALSE){
+    Map(plotData, time_df, data, names(data), col)
+  } else {
+    baseline <- findBaseline()
+    Map(plotDataAndLine, time_df, data, names(data), col, baseline)
+  }
+  
+  # Map(function(x, y, z) plot(x, y=y, main=z, col=b, type="l",
+  #                            xlab="Time [min]", ylab="Intensity [au]"),
+  #     time_df, data, names(data))
 }
 
 plotRaw <- function(){
@@ -89,6 +116,11 @@ plotRaw <- function(){
 }
 
 plotBaseline <- function(){
+  plots <- plotwells(getRawWells, "red", plotLine = TRUE)
+  plots
+}
+
+plotSubtractBaseline <- function(){
   plots <- plotwells(subtractBaseline, "blue")
   plots
 }
@@ -105,9 +137,15 @@ output$rawPlots <- renderPlot({
 })
 
 output$baselinePlots <- renderPlot({
-  goOnSubtract()
+  goOnFind()
   baselinePlots <- plotBaseline()
   baselinePlots
+})
+
+output$subtractBaselinePlots <- renderPlot({
+  goOnSubtract()
+  subtractPlots <- plotSubtractBaseline()
+  subtractPlots
 })
 
 output$removedBlipsPlots <- renderPlot({
@@ -127,9 +165,20 @@ output$downloadRawPlots <- downloadHandler(
   }
 )
 
-output$downloadSubtracted <- downloadHandler(
+output$downloadBaseline <- downloadHandler(
   filename = function() {
     file = paste0("baselinePlots_", fileName(), ".png")
+  },
+  content = function(file){
+    png(file=file, height = 480*1.5, width = 480*3)
+    plotBaseline()
+    dev.off()
+  }
+)
+
+output$downloadSubtracted <- downloadHandler(
+  filename = function() {
+    file = paste0("subtractedPlots_", fileName(), ".png")
   },
   content = function(file){
     png(file=file, height = 480*1.5, width = 480*3)
