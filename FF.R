@@ -7,11 +7,19 @@ metadata <- fin[1:4]
 # Create dataframe with only well readings
 wells <- fin[5:16]
 # Use running median to find baseline for each well
-n <- length(wells$W1)
+n <- length(wells[[1]])
 k <- (1 + 2 * min((n-1)%/% 2, ceiling(0.1*n))) # Turlach default for k
 m <- min(k, 24001)
-baselines <- lapply(wells, runmed, k=m)
-# Subtract baseline from each well and change any negative values to 0
+# Use running median to find baseline for each well
+# Runtime for 23 hour FLIC (About 8 minutes total); 30 minutes
+baselines1 <- lapply(wells, runmed, k=m) # 50 seconds; < 1 sec
+baselines2 <- lapply(wells - baselines1, beads, 1, 0.05, 6, 0.6*0.5, 0.6*5, 0.6*4) # 7 minutes; 13 seconds
+baselines3 <- rlist::list.map(baselines2, as.list(.[1]))
+baselines4 = unlist(baselines3, recursive = F)
+baselines5 <- lapply(baselines4, function(x) as.data.frame(as.matrix(x)))
+baselines6 <- as.data.frame(baselines5)
+baselines <- wells - baselines6
+
 subtractBaselines <- wells - baselines
 subtractBaselines[subtractBaselines < 0] <- 0
 time <- seq_len(length(wells[[1]])) / 300
@@ -23,6 +31,7 @@ plot_baselines <- function(x, y, z, baseline){
   print(length(x))
   lines(x = x, y = baseline, lwd=2, col="blue")
 }
+Map(plot_baselines, time_df, wells, names(wells), smoothBaselines)
 Map(plot_baselines, time_df, wells, names(wells), baselines)
 Map(function(x,y) plot(x, main =y, col="red", type="l"), wells, names(wells))
 Map(function(x) lines(x, lwd=2, col="blue"), baselines)

@@ -2,6 +2,7 @@
 # Preprocessing tab of Shiny app
 
 #====Functions used on input file====
+source("beads.R")
 inFile <- reactive(input$fin)
 
 goOnFile <- eventReactive(input$submitButton, {
@@ -60,13 +61,25 @@ getRawWells <- reactive({
   wells
 })
 
-findBaseline <- reactive({
-  wells <- getRawWells()
-  # Use running median to find baseline for each well
-  n <- length(wells[[1]])
+baselineSteps <- function(x){
+  n <- length(x[[1]])
   k <- (1 + 2 * min((n-1)%/% 2, ceiling(0.1*n))) # Turlach default for k
   m <- min(k, 24001)
-  baselines <- lapply(wells, runmed, k=m)
+  # Use running median to find baseline for each well
+  baselines1 <- lapply(x, runmed, k=m)
+  baselines2 <- lapply(x - baselines1, beads, 1, 0.05, 6, 0.6*0.5, 0.6*5, 0.6*4)
+  baselines3 <- rlist::list.map(baselines2, as.list(.[1]))
+  baselines4 = unlist(baselines3, recursive = F)
+  baselines5 <- lapply(baselines4, function(x) as.data.frame(as.matrix(x)))
+  baselines6 <- as.data.frame(baselines5)
+  names(baselines6) <- names
+  baselines <- x - baselines6
+  baselines
+}
+
+findBaseline <- reactive({
+  wells <- getRawWells()
+  baselines <- baselineSteps(wells)
   baselines
 })
 
@@ -104,10 +117,6 @@ plotwells <- function(a, col, plotLine=FALSE){
     baseline <- findBaseline()
     Map(plotDataAndLine, time_df, data, names(data), col, baseline)
   }
-  
-  # Map(function(x, y, z) plot(x, y=y, main=z, col=b, type="l",
-  #                            xlab="Time [min]", ylab="Intensity [au]"),
-  #     time_df, data, names(data))
 }
 
 plotRaw <- function(){
