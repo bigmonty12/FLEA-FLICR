@@ -64,7 +64,8 @@ editEvents <- function(x) {
 removeUntilFirstEvent <- function(x){
   l <- input$length
   rows <- l * 60 * 5
-  df <- data.frame(matrix(0, nrow = rows, ncol = 12))
+  # df <- data.frame(matrix(0, ncol = 12))
+  df <- list()
   for (i in seq(1, 11, 2)) {
     # Time of first event in arena
     m <- min(rle(x[[i]])$lengths[1], rle(x[[i+1]])$lengths[1])
@@ -74,6 +75,7 @@ removeUntilFirstEvent <- function(x){
     df[[i]] <- head(tail(x[[i]], -m), l)
     df[[i+1]] <- head(tail(x[[i+1]], -m), l)
   }
+  df <- data.frame(lapply(df, "length<-", max(lengths(df))))
   colnames(df) <- names
   return(df)
 }
