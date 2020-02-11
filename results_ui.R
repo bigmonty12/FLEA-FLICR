@@ -16,7 +16,7 @@ tabItem(tabName = "results",
           h2("Preference Data"),
           fluidRow(
             box(
-              dataTableOutput("analyzedPreference"),
+              DT::dataTableOutput("analyzedPreference"),
               downloadButton("downloadAnalyzedPreference", "Download Analyzed Preference"),
               
               width = 12

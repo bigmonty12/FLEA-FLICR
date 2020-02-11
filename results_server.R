@@ -4,14 +4,12 @@
 output$analyzedEvents <- renderDataTable({
   goOnAnalyzeData()
   analyzedEvents <- analyzedEvents()
-  #analyzedEvents <- arrange(analyzedEvents, Condition)
   analyzedEvents
 })
 
-output$analyzedPreference <- renderDataTable({
+output$analyzedPreference <- DT::renderDataTable({ 
   goOnAnalyzeData()
   analyzedPreference <- analyzedPreference()
-  #analyzedPreference <- arrange(analyzedPreference, Condition)
   analyzedPreference
 })
 
