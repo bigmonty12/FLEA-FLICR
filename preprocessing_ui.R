@@ -33,12 +33,8 @@ tabItem(tabName = "preprocessing",
           h2("Blips Removed"),
           fluidRow(
             box(plotOutput("removedBlipsPlots"), width = 12,
+                actionButton("selectWellsButton", "Go to Analysis"),
                 downloadButton("downloadRemovedBlips", "Download Plots"))
-          ),
-          fluidRow(
-            box(checkboxGroupInput("whichWells", "Wells to keep for analysis:",
-                                   names, selected = names, inline = TRUE),
-                actionButton("selectWellsButton", "Select Wells and Go to Analysis"),
-                width = 12
-            )
-          )))
+          )
+        )
+)
