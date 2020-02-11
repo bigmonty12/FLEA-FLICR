@@ -61,12 +61,17 @@ getRawWells <- reactive({
   wells
 })
 
-baselineSteps <- function(x){
+baselineRunMed <- function(x){
   n <- length(x[[1]])
   k <- (1 + 2 * min((n-1)%/% 2, ceiling(0.1*n))) # Turlach default for k
   m <- min(k, 24001)
   # Use running median to find baseline for each well
-  baselines1 <- lapply(x, runmed, k=m)
+  baselines <- lapply(x, runmed, k=m)
+  baselines
+}
+
+baselineBeads <- function(x){
+  baselines1 <- baselineRunMed(x)
   baselines2 <- lapply(x - baselines1, beads, 1, 0.05, 6, 0.6*0.5, 0.6*5, 0.6*4)
   baselines3 <- rlist::list.map(baselines2, as.list(.[1]))
   baselines4 = unlist(baselines3, recursive = F)
@@ -79,7 +84,12 @@ baselineSteps <- function(x){
 
 findBaseline <- reactive({
   wells <- getRawWells()
-  baselines <- baselineSteps(wells)
+  if (input$baselineMethod == "Running Median (fast, less precise)"){
+    baselines <- baselineRunMed(wells)
+    baselines <- as.data.frame(baselines)
+  } else {
+    baselines <- baselineBeads(wells)
+  }
   baselines
 })
 

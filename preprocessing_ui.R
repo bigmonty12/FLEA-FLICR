@@ -5,6 +5,11 @@ tabItem(tabName = "preprocessing",
         fluidRow(
           box(fileInput("fin", "Select Raw FLIC file", accept = c('text/csv', '.csv')),
               actionButton("submitButton", "Submit and View Wells"),
+              width = 5),
+          box(selectInput("baselineMethod", "Choose Baseline Method",
+                          choices = c("Running Median (fast, less precise)",
+                                      "EEG (slow, more precise)"),
+                          selected = "Running Median (fast, less precise)"),
               width = 5)),
         conditionalPanel(
           condition = "input.submitButton > 0",
