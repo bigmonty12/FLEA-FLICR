@@ -141,15 +141,12 @@ labelEvents <- reactive({
 })
 
 editedEvents <- reactive({
-  labeledEvents <- labelEvents()
-  editedEvents <- as.data.frame(lapply(labeledEvents, editEvents))
+  editedEvents <- as.data.frame(lapply(labelEvents(), editEvents))
   editedEvents
 })
 
 analyzedEvents <- reactive({
-  editedEvents <- editedEvents()
-  removedUntilFirstEvent <- removeUntilFirstEvent(editedEvents)
-  analyzedEvents <- lapply(removedUntilFirstEvent, analyzeEvents)
+  analyzedEvents <- lapply(removeUntilFirstEvent(editedEvents()), analyzeEvents)
   analyzedEvents <- as.data.frame(do.call(rbind, analyzedEvents))
   analyzedEvents['Condition'] <- c(paste0(input$well1, ": ", input$solutionA), 
                                 paste0(input$well1, ": ", input$solutionB),
@@ -164,15 +161,14 @@ analyzedEvents <- reactive({
                                 paste0(input$well6, ": ", input$solutionA), 
                                 paste0(input$well6, ": ", input$solutionB)
                                 )
-  analyzedEvents['Minutes.Analyzed'] <- rep(timeAnalyzed(removedUntilFirstEvent), 12)
+  analyzedEvents['Minutes.Analyzed'] <- rep(timeAnalyzed(removeUntilFirstEvent(editedEvents())), 12)
   analyzedEvents['Well'] <- names
   analyzedEvents <- analyzedEvents %>% dplyr::select(Well, Condition, everything())
   analyzedEvents
 })
 
 analyzedPreference <- reactive({
-  analyzedEvents <- analyzedEvents()
-  preferences <- analyzePreference(analyzedEvents)
+  preferences <- analyzePreference(analyzedEvents())
   preferences <- as.data.frame(do.call(rbind, preferences))
   preferences = data.frame(lapply(preferences, as.numeric))
   

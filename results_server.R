@@ -18,9 +18,8 @@ output$downloadAnalyzedEvents <- downloadHandler(
     file = paste0("analyzedEvents_", fileName(), ".csv")
   },
   content = function(file){
-    analyzedEvents <- analyzedEvents()
-    analyzedEvents = data.frame(lapply(analyzedEvents, as.character), stringsAsFactors=FALSE)
-    write.csv(analyzedEvents, file)
+    write.csv(analyzedEvents = data.frame(lapply(analyzedEvents(), as.character), stringsAsFactors=FALSE), 
+              file)
   }
 )
 
@@ -29,8 +28,7 @@ output$downloadAnalyzedPreference <- downloadHandler(
     file = paste0("analyzedPreference_", fileName(), ".csv")
   },
   content = function(file){
-    analyzedPreference <- analyzedPreference()
-    analyzedPreference = data.frame(lapply(analyzedPreference, as.character), stringsAsFactors=FALSE)
-    write.csv(analyzedPreference, file)
+    write.csv(data.frame(lapply(analyzedPreference(), as.character), stringsAsFactors=FALSE), 
+              file)
   }
 )

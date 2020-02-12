@@ -2,7 +2,6 @@
 # Preprocessing tab of Shiny app
 
 #====Functions used on input file====
-source("beads.R")
 inFile <- reactive(input$fin)
 
 goOnFile <- eventReactive(input$submitButton, {
@@ -29,6 +28,11 @@ fileName <- reactive({
 #====Button pressing functions====
 goOnFind <- eventReactive(input$findButton, {
   input$fin
+})
+
+observeEvent(input$findButtton, {
+  #reset("submitButton")
+  input$submitButton <- NULL
 })
 
 goOnSubtract <- eventReactive(input$subtractButton, {
@@ -71,6 +75,7 @@ baselineRunMed <- function(x){
 }
 
 baselineBeads <- function(x){
+  source("beads.R")
   baselines1 <- baselineRunMed(x)
   baselines2 <- lapply(x - baselines1, beads, 1, 0.05, 6, 0.6*0.5, 0.6*5, 0.6*4)
   baselines3 <- rlist::list.map(baselines2, as.list(.[1]))

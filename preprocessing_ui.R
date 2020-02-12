@@ -12,7 +12,7 @@ tabItem(tabName = "preprocessing",
                           selected = "Running Median (fast, less precise)"),
               width = 5)),
         conditionalPanel(
-          condition = "input.submitButton > 0",
+          condition = "input.submitButton > 0 & input.findButton == 0",
           h2("Raw Plots"),
           fluidRow(
             box(plotOutput("rawPlots"), width = 12,
@@ -20,14 +20,14 @@ tabItem(tabName = "preprocessing",
                 downloadButton("downloadRawPlots", "Download Plots")))
         ),
         conditionalPanel(
-          condition = "input.findButton > 0",
+          condition = "input.findButton > 0 & input.subtractButton == 0",
           h2("Baseline Drawn"),
           fluidRow(
             box(plotOutput("baselinePlots"), width = 12,
                 actionButton("subtractButton", "Subtract Baseline"),
                 downloadButton("downloadBaseline", "Download Plots")))),
         conditionalPanel(
-          condition = "input.subtractButton > 0",
+          condition = "input.subtractButton > 0 & input.removeBlipsButton == 0",
           h2("Baseline Subtracted"),
           fluidRow(
             box(plotOutput("subtractBaselinePlots"), width = 12,
