@@ -60,20 +60,40 @@ getRawWells <- reactive({
   wells
 })
 
-findBaseline <- reactive({
-  wells <- getRawWells()
-  # Use running median to find baseline for each well
-  n <- length(wells[[1]])
+baselineRunMed <- function(x){
+  n <- length(x[[1]])
   k <- (1 + 2 * min((n-1)%/% 2, ceiling(0.1*n))) # Turlach default for k
   m <- min(k, 24001)
-  baselines <- lapply(wells, runmed, k=m)
+  # Use running median to find baseline for each well
+  baselines <- lapply(x, runmed, k=m)
+  baselines
+}
+
+baselineBeads <- function(x){
+  source("beads.R")
+  baselines1 <- baselineRunMed(x)
+  baselines2 <- lapply(x - baselines1, beads, 1, 0.05, 6, 0.6*0.5, 0.6*5, 0.6*4)
+  baselines3 <- rlist::list.map(baselines2, as.list(.[1]))
+  baselines4 = unlist(baselines3, recursive = F)
+  baselines5 <- lapply(baselines4, function(x) as.data.frame(as.matrix(x)))
+  baselines6 <- as.data.frame(baselines5)
+  names(baselines6) <- names
+  baselines <- x - baselines6
+  rm(baselines1, baselines2, baselines3, baselines4, baselines5, baselines6)
+  baselines
+}
+
+findBaseline <- reactive({
+  if (input$baselineMethod == "Running Median (fast, less precise)"){
+    baselines <- as.data.frame(baselineRunMed(getRawWells()))
+  } else {
+    baselines <- baselineBeads(getRawWells())
+  }
   baselines
 })
 
 subtractBaseline <- reactive({
-  wells <- getRawWells()
-  baselines <- findBaseline()
-  subtractBaselines <- wells - baselines
+  subtractBaselines <- getRawWells() - findBaseline()
 })
 
 removeBlips <- reactive({
@@ -104,10 +124,6 @@ plotwells <- function(a, col, plotLine=FALSE){
     baseline <- findBaseline()
     Map(plotDataAndLine, time_df, data, names(data), col, baseline)
   }
-  
-  # Map(function(x, y, z) plot(x, y=y, main=z, col=b, type="l",
-  #                            xlab="Time [min]", ylab="Intensity [au]"),
-  #     time_df, data, names(data))
 }
 
 plotRaw <- function(){
@@ -133,24 +149,28 @@ plotRemovedBlips <- function(){
 output$rawPlots <- renderPlot({
   goOnFile()
   rawPlots <- plotRaw()
+  print(pryr::mem_used())
   rawPlots
 })
 
 output$baselinePlots <- renderPlot({
   goOnFind()
   baselinePlots <- plotBaseline()
+  print(pryr::mem_used())
   baselinePlots
 })
 
 output$subtractBaselinePlots <- renderPlot({
   goOnSubtract()
   subtractPlots <- plotSubtractBaseline()
+  print(pryr::mem_used())
   subtractPlots
 })
 
 output$removedBlipsPlots <- renderPlot({
   goOnBlips()
   removedBlips <- plotRemovedBlips()
+  print(pryr::mem_used())
   removedBlips
 })
 #====Download plots====
@@ -182,7 +202,7 @@ output$downloadSubtracted <- downloadHandler(
   },
   content = function(file){
     png(file=file, height = 480*1.5, width = 480*3)
-    plotBaseline()
+    plotSubtractBaseline()
     dev.off()
   }
 )

@@ -62,9 +62,9 @@ editEvents <- function(x) {
 
 #==== Remove data until first event of the arena ==== 
 removeUntilFirstEvent <- function(x){
-  l <- input$length
-  rows <- l * 60 * 5
-  df <- data.frame(matrix(0, nrow = rows, ncol = 12))
+  rows <- input$length * 60 * 5
+  # df <- data.frame(matrix(0, ncol = 12))
+  df <- list()
   for (i in seq(1, 11, 2)) {
     # Time of first event in arena
     m <- min(rle(x[[i]])$lengths[1], rle(x[[i+1]])$lengths[1])
@@ -74,14 +74,14 @@ removeUntilFirstEvent <- function(x){
     df[[i]] <- head(tail(x[[i]], -m), l)
     df[[i+1]] <- head(tail(x[[i+1]], -m), l)
   }
+  df <- data.frame(lapply(df, "length<-", max(lengths(df))))
+  df <- data.frame(df)
   colnames(df) <- names
   return(df)
 }
 
 timeAnalyzed <- function(x){
-  rows <- length(x[[1]])
-  mins <- rows / 300
-  return(mins)
+  return(length(x[[1]]) / 300)
 }
 
 analyzeEvents <- function(x) {
@@ -139,15 +139,12 @@ labelEvents <- reactive({
 })
 
 editedEvents <- reactive({
-  labeledEvents <- labelEvents()
-  editedEvents <- as.data.frame(lapply(labeledEvents, editEvents))
+  editedEvents <- as.data.frame(lapply(labelEvents(), editEvents))
   editedEvents
 })
 
 analyzedEvents <- reactive({
-  editedEvents <- editedEvents()
-  removedUntilFirstEvent <- removeUntilFirstEvent(editedEvents)
-  analyzedEvents <- lapply(removedUntilFirstEvent, analyzeEvents)
+  analyzedEvents <- lapply(removeUntilFirstEvent(editedEvents()), analyzeEvents)
   analyzedEvents <- as.data.frame(do.call(rbind, analyzedEvents))
   analyzedEvents['Condition'] <- c(paste0(input$well1, ": ", input$solutionA), 
                                 paste0(input$well1, ": ", input$solutionB),
@@ -162,15 +159,14 @@ analyzedEvents <- reactive({
                                 paste0(input$well6, ": ", input$solutionA), 
                                 paste0(input$well6, ": ", input$solutionB)
                                 )
-  analyzedEvents['Minutes.Analyzed'] <- rep(timeAnalyzed(removedUntilFirstEvent), 12)
+  analyzedEvents['Minutes.Analyzed'] <- rep(timeAnalyzed(removeUntilFirstEvent(editedEvents())), 12)
   analyzedEvents['Well'] <- names
   analyzedEvents <- analyzedEvents %>% dplyr::select(Well, Condition, everything())
   analyzedEvents
 })
 
 analyzedPreference <- reactive({
-  analyzedEvents <- analyzedEvents()
-  preferences <- analyzePreference(analyzedEvents)
+  preferences <- analyzePreference(analyzedEvents())
   preferences <- as.data.frame(do.call(rbind, preferences))
   preferences = data.frame(lapply(preferences, as.numeric))
   

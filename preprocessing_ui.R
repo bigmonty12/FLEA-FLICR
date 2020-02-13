@@ -5,9 +5,14 @@ tabItem(tabName = "preprocessing",
         fluidRow(
           box(fileInput("fin", "Select Raw FLIC file", accept = c('text/csv', '.csv')),
               actionButton("submitButton", "Submit and View Wells"),
+              width = 5),
+          box(selectInput("baselineMethod", "Choose Baseline Method",
+                          choices = c("Running Median (fast, less precise)",
+                                      "EEG (slow, more precise)"),
+                          selected = "Running Median (fast, less precise)"),
               width = 5)),
         conditionalPanel(
-          condition = "input.submitButton > 0",
+          condition = "input.submitButton > 0 & input.findButton == 0",
           h2("Raw Plots"),
           fluidRow(
             box(plotOutput("rawPlots"), width = 12,
@@ -15,14 +20,14 @@ tabItem(tabName = "preprocessing",
                 downloadButton("downloadRawPlots", "Download Plots")))
         ),
         conditionalPanel(
-          condition = "input.findButton > 0",
+          condition = "input.findButton > 0 & input.subtractButton == 0",
           h2("Baseline Drawn"),
           fluidRow(
             box(plotOutput("baselinePlots"), width = 12,
                 actionButton("subtractButton", "Subtract Baseline"),
                 downloadButton("downloadBaseline", "Download Plots")))),
         conditionalPanel(
-          condition = "input.subtractButton > 0",
+          condition = "input.subtractButton > 0 & input.removeBlipsButton == 0",
           h2("Baseline Subtracted"),
           fluidRow(
             box(plotOutput("subtractBaselinePlots"), width = 12,
@@ -33,12 +38,8 @@ tabItem(tabName = "preprocessing",
           h2("Blips Removed"),
           fluidRow(
             box(plotOutput("removedBlipsPlots"), width = 12,
+                actionButton("selectWellsButton", "Go to Analysis"),
                 downloadButton("downloadRemovedBlips", "Download Plots"))
-          ),
-          fluidRow(
-            box(checkboxGroupInput("whichWells", "Wells to keep for analysis:",
-                                   names, selected = names, inline = TRUE),
-                actionButton("selectWellsButton", "Select Wells and Go to Analysis"),
-                width = 12
-            )
-          )))
+          )
+        )
+)
