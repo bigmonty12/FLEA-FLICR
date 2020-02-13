@@ -157,6 +157,7 @@ output$baselinePlots <- renderPlot({
   goOnFind()
   baselinePlots <- plotBaseline()
   print(pryr::mem_used())
+  output$rawPlots <- NULL
   baselinePlots
 })
 
@@ -164,6 +165,7 @@ output$subtractBaselinePlots <- renderPlot({
   goOnSubtract()
   subtractPlots <- plotSubtractBaseline()
   print(pryr::mem_used())
+  output$baselinePlots <- NULL
   subtractPlots
 })
 
@@ -171,6 +173,7 @@ output$removedBlipsPlots <- renderPlot({
   goOnBlips()
   removedBlips <- plotRemovedBlips()
   print(pryr::mem_used())
+  output$subtractBaselinePlots <- NULL
   removedBlips
 })
 #====Download plots====
