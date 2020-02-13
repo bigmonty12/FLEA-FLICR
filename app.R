@@ -1,11 +1,12 @@
 # FLIC app created by Austin Montgomery
 # Feb 2020
+print(pryr::mem_used())
 library(shiny)
 library(shinydashboard)
-options(shiny.maxRequestSize=50*1024^2) 
-library(ggplot2)
+options(shiny.maxRequestSize=50*1024^2)
 library(dplyr)
 library(DT)
+print(pryr::mem_used())
 names <- c("1A", "1B", "2A", "2B", "3A", "3B", "4A", "4B", "5A", "5B", "6A", "6B")
 
 ui <- dashboardPage(

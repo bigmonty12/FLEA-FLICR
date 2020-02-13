@@ -1,15 +1,17 @@
 # results_server.R
 # Results tab of Shiny app
 
-output$analyzedEvents <- renderDataTable({
+output$analyzedEvents <- DT::renderDataTable({
   goOnAnalyzeData()
   analyzedEvents <- analyzedEvents()
+  print(pryr::mem_used())
   analyzedEvents
 })
 
 output$analyzedPreference <- DT::renderDataTable({ 
   goOnAnalyzeData()
   analyzedPreference <- analyzedPreference()
+  print(pryr::mem_used())
   analyzedPreference
 })
 

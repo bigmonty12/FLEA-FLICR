@@ -8,7 +8,7 @@ tabItem(tabName = "results",
           h2("Event Data"),
           fluidRow(
             box(
-              dataTableOutput("analyzedEvents"),
+              DT::dataTableOutput("analyzedEvents"),
               downloadButton("downloadAnalyzedEvents", "Download Analyzed Events"),
               width = 12
             )

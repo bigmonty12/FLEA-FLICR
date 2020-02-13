@@ -30,11 +30,6 @@ goOnFind <- eventReactive(input$findButton, {
   input$fin
 })
 
-observeEvent(input$findButtton, {
-  #reset("submitButton")
-  input$submitButton <- NULL
-})
-
 goOnSubtract <- eventReactive(input$subtractButton, {
   input$fin
 })
@@ -84,24 +79,21 @@ baselineBeads <- function(x){
   baselines6 <- as.data.frame(baselines5)
   names(baselines6) <- names
   baselines <- x - baselines6
+  rm(baselines1, baselines2, baselines3, baselines4, baselines5, baselines6)
   baselines
 }
 
 findBaseline <- reactive({
-  wells <- getRawWells()
   if (input$baselineMethod == "Running Median (fast, less precise)"){
-    baselines <- baselineRunMed(wells)
-    baselines <- as.data.frame(baselines)
+    baselines <- as.data.frame(baselineRunMed(getRawWells()))
   } else {
-    baselines <- baselineBeads(wells)
+    baselines <- baselineBeads(getRawWells())
   }
   baselines
 })
 
 subtractBaseline <- reactive({
-  wells <- getRawWells()
-  baselines <- findBaseline()
-  subtractBaselines <- wells - baselines
+  subtractBaselines <- getRawWells() - findBaseline()
 })
 
 removeBlips <- reactive({
@@ -157,24 +149,28 @@ plotRemovedBlips <- function(){
 output$rawPlots <- renderPlot({
   goOnFile()
   rawPlots <- plotRaw()
+  print(pryr::mem_used())
   rawPlots
 })
 
 output$baselinePlots <- renderPlot({
   goOnFind()
   baselinePlots <- plotBaseline()
+  print(pryr::mem_used())
   baselinePlots
 })
 
 output$subtractBaselinePlots <- renderPlot({
   goOnSubtract()
   subtractPlots <- plotSubtractBaseline()
+  print(pryr::mem_used())
   subtractPlots
 })
 
 output$removedBlipsPlots <- renderPlot({
   goOnBlips()
   removedBlips <- plotRemovedBlips()
+  print(pryr::mem_used())
   removedBlips
 })
 #====Download plots====
@@ -206,7 +202,7 @@ output$downloadSubtracted <- downloadHandler(
   },
   content = function(file){
     png(file=file, height = 480*1.5, width = 480*3)
-    plotBaseline()
+    plotSubtractBaseline()
     dev.off()
   }
 )
