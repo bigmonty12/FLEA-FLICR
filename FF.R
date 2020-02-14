@@ -2,6 +2,19 @@ library(dplyr)
 
 #fin <- read.csv("012920_DFM_5.csv")
 #fin <- read.csv("../../../FLIC-FLEA/191003 DFM_14.csv")
+fin <- readxl::read_excel("020620_1_Analysis.xlsx", sheet = 2)
+
+BinMean <- function (vec, every, na.rm = FALSE) {
+  n <- length(vec)
+  x <- .colMeans(vec, every, n %/% every, na.rm)
+  r <- n %% every
+  if (r) x <- c(x, mean.default(vec[(n - r + 1):n], na.rm = na.rm))
+  x
+}
+b_mean <- BinMean(fin$Dev1_Voltage__0, every = 100)
+
+conversion <- as.data.frame(lapply(fin[2:9], BinMean, every=100)) * 310
+
 # Create dataframe with metadata
 metadata <- fin[1:4]
 # Create dataframe with only well readings
