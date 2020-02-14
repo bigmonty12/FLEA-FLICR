@@ -1,7 +1,7 @@
-library(tidyverse)
+library(dplyr)
 
-fin <- read.csv("012920_DFM_5.csv")
-fin <- read.csv("../../../FLIC-FLEA/191003 DFM_14.csv")
+#fin <- read.csv("012920_DFM_5.csv")
+#fin <- read.csv("../../../FLIC-FLEA/191003 DFM_14.csv")
 # Create dataframe with metadata
 metadata <- fin[1:4]
 # Create dataframe with only well readings
@@ -12,7 +12,12 @@ k <- (1 + 2 * min((n-1)%/% 2, ceiling(0.1*n))) # Turlach default for k
 m <- min(k, 24001)
 # Use running median to find baseline for each well
 # Runtime for 23 hour FLIC (About 8 minutes total); 30 minutes
-baselines1 <- lapply(wells, runmed, k=m) # 50 seconds; < 1 sec
+memMed <- function(x, k){
+  y <- runmed(x, k)
+  print(pryr::mem_used())
+  return(y)
+}
+baselines1 <- lapply(wells, memMed, k=m) # 50 seconds; < 1 sec
 baselines2 <- lapply(wells - baselines1, beads, 1, 0.05, 6, 0.6*0.5, 0.6*5, 0.6*4) # 7 minutes; 13 seconds
 baselines3 <- rlist::list.map(baselines2, as.list(.[1]))
 baselines4 = unlist(baselines3, recursive = F)
@@ -20,7 +25,7 @@ baselines5 <- lapply(baselines4, function(x) as.data.frame(as.matrix(x)))
 baselines6 <- as.data.frame(baselines5)
 baselines <- wells - baselines6
 
-subtractBaselines <- wells - baselines
+subtractBaselines <- wells - baselines1
 subtractBaselines[subtractBaselines < 0] <- 0
 time <- seq_len(length(wells[[1]])) / 300
 time_df <- data.frame(a=time, b=time, c=time, d=time, e=time, f=time, g=time, h=time, i=time, j=time, k=time, l=time)
