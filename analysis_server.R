@@ -25,6 +25,10 @@ numTypesList <- reactive({
   })
 })
 
+observe({
+  shinyjs::toggleState("describeWellsButton", !is.null(input$type1) && input$type1 != "")
+})
+
 eventReactive(input$describeWellsButton, {
   input$fin
 })
@@ -180,6 +184,10 @@ analyzedPreference <- reactive({
   preferences
 })
 
+observe({
+  shinyjs::toggleState("analyzeDataButton", !is.null(input$solutionA) && input$solutionA != "" && 
+                         !is.null(input$solutionB) && input$solutionB != "")
+})
 goOnAnalyzeData <- eventReactive(input$analyzeDataButton, {
   input$fin
 })
