@@ -2,12 +2,13 @@
 # Analysis tab of Shiny app
 
 tabItem(tabName = "analysis",
+        shinyjs::useShinyjs(),
         h2("Analysis"),
         fluidRow(
           box(
-            numericInput("numTypes", "Number of genotypes/phenotypes", value = 2),
+            numericInput("numTypes", "Number of genotypes/phenotypes", value = 2, min = 1),
             uiOutput("types", inline = TRUE),
-            actionButton("describeWellsButton", "Assign Wells"),
+            shinyjs::disabled(actionButton("describeWellsButton", "Assign Wells")),
             width = 7)
         ),
         conditionalPanel(
@@ -33,7 +34,7 @@ tabItem(tabName = "analysis",
               selectInput("aversive", "Aversive Compound", c("A", "B"), selected = "B"),
               numericInput("length", "How many minutes to analyze?", value=30),
               width = 5,
-              actionButton("analyzeDataButton", "Analyze Data")
+              shinyjs::disabled(actionButton("analyzeDataButton", "Analyze Data"))
             )
           )
         )

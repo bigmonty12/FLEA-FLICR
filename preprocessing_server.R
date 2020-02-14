@@ -146,31 +146,39 @@ plotRemovedBlips <- function(){
   plots
 }
 #====Render plots====
+rawW <- waiter::Waiter$new(id="rawPlots", html = spin_pulsar())
 output$rawPlots <- renderPlot({
   goOnFile()
+  rawW$show()
   rawPlots <- plotRaw()
   print(pryr::mem_used())
   rawPlots
 })
 
+baselineW <- waiter::Waiter$new(id="baselinePlots", html = spin_pulsar())
 output$baselinePlots <- renderPlot({
   goOnFind()
+  baselineW$show()
   baselinePlots <- plotBaseline()
   print(pryr::mem_used())
   output$rawPlots <- NULL
   baselinePlots
 })
 
+subtractW <- waiter::Waiter$new(id="subtractBaselinePlots", html = spin_pulsar())
 output$subtractBaselinePlots <- renderPlot({
   goOnSubtract()
+  subtractW$show()
   subtractPlots <- plotSubtractBaseline()
   print(pryr::mem_used())
   output$baselinePlots <- NULL
   subtractPlots
 })
 
+removedW <- waiter::Waiter$new(id="removedBlipsPlots", html = spin_pulsar())
 output$removedBlipsPlots <- renderPlot({
   goOnBlips()
+  removedW$show()
   removedBlips <- plotRemovedBlips()
   print(pryr::mem_used())
   output$subtractBaselinePlots <- NULL
