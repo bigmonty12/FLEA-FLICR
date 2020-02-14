@@ -2,6 +2,7 @@
 # Preprocessing tab of Shiny app
 
 tabItem(tabName = "preprocessing",
+        waiter::use_waiter(),
         fluidRow(
           box(fileInput("fin", "Select Raw FLIC file", accept = c('text/csv', '.csv')),
               actionButton("submitButton", "Submit and View Wells"),
