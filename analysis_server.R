@@ -41,13 +41,6 @@ observeEvent(input$describeWellsButton, {
     })
   })
 })
-# lapply(1:wellNums(), function(i) {
-#   output[[paste0("well", i)]] <- renderUI({
-#     types <- numTypesList()
-#     selectInput(paste0("well", i), paste0("Well ", i), choices = types)
-#   })
-# })
-
 
 #====Convert data to none, leg, or probosic event====
 editEvents <- function(x) {

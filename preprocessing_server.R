@@ -15,7 +15,12 @@ readFile <- reactive({
     return(NULL)
   
   isolate({
-    raw <- read.csv(rawFile$datapath)
+    if (input$flicFlea == "FLEA") {
+      raw <- readxl::read_excel(rawFile$datapath, sheet = 2)
+    }
+    else {
+      raw <- read.csv(rawFile$datapath)
+    } 
     raw
   })
 })
@@ -58,7 +63,11 @@ whichNames <- reactive({
 makeTimeDF <- reactive({
   fin <- readFile()
   # Create "Time" dataframe to use as x-axis in minutes
-  time <- seq_len(length(fin[[1]])) / 300
+  if (input$flicFlea == "FLIC") {
+    time <- seq_len(length(fin[[1]])) / 300
+  } else {
+    time <- seq_len(length(fin[[1]])) / 30000
+  }
   time_df <- data.frame(a=time, b=time, c=time, d=time, e=time, f=time, g=time, h=time, i=time, j=time, k=time, l=time)
 })
 
@@ -71,9 +80,29 @@ wellNums <- reactive({
   wells
 })
 
+BinMean <- function (vec, every, na.rm = FALSE) {
+  n <- length(vec)
+  x <- .colMeans(vec, every, n %/% every, na.rm)
+  r <- n %% every
+  if (r) x <- c(x, mean.default(vec[(n - r + 1):n], na.rm = na.rm))
+  x
+}
+
+convertFLEA <- reactive({
+  fin <- readFile()
+  b_mean <- BinMean(fin[[1]], every = 100)
+  conversion <- as.data.frame(lapply(fin[2:9], BinMean, every=100)) * 310
+  conversion
+})
+
 getRawWells <- reactive({
   fin <- readFile()
-  wells <- fin[5:16]
+  if (input$flicFlea == "FLIC"){
+    wells <- fin[5:16]
+  }
+  else {
+    wells <- converFLEA()
+  }
   names(wells) <- whichNames()
   wells
 })
