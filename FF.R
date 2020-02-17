@@ -11,7 +11,7 @@ BinMean <- function (vec, every, na.rm = FALSE) {
   if (r) x <- c(x, mean.default(vec[(n - r + 1):n], na.rm = na.rm))
   x
 }
-b_mean <- BinMean(fin$Dev1_Voltage__0, every = 100)
+b_mean <- BinMean(fin[[1]], every = 100)
 
 conversion <- as.data.frame(lapply(fin[2:9], BinMean, every=100)) * 310
 
