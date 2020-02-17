@@ -32,13 +32,23 @@ observe({
 eventReactive(input$describeWellsButton, {
   input$fin
 })
-#====Create 6 Wells to choose pheno/genotype====
-lapply(1:6, function(i) {
-  output[[paste0("well", i)]] <- renderUI({
-    types <- numTypesList()
-    selectInput(paste0("well", i), paste0("Well ", i), choices = types)
+#====Create Wells to choose pheno/genotype====
+observeEvent(input$describeWellsButton, {
+  lapply(1:wellNums(), function(i) {
+    output[[paste0("well", i)]] <- renderUI({
+      types <- numTypesList()
+      selectInput(paste0("well", i), paste0("Well ", i), choices = types)
+    })
   })
 })
+# lapply(1:wellNums(), function(i) {
+#   output[[paste0("well", i)]] <- renderUI({
+#     types <- numTypesList()
+#     selectInput(paste0("well", i), paste0("Well ", i), choices = types)
+#   })
+# })
+
+
 #====Convert data to none, leg, or probosic event====
 editEvents <- function(x) {
   runs <- rle(as.integer(x))
@@ -80,7 +90,7 @@ removeUntilFirstEvent <- function(x){
   }
   df <- data.frame(lapply(df, "length<-", max(lengths(df))))
   df <- data.frame(df)
-  colnames(df) <- names
+  colnames(df) <- whichNames()
   return(df)
 }
 
@@ -113,8 +123,9 @@ analyzeEvents <- function(x) {
 
 analyzePreference <- function(x) {
   totalPreferences <- list()
+  end <- wellNums() * 2 - 1
   z = 1
-  for (i in seq(1, 11, 2)) {
+  for (i in seq(1, end, 2)) {
     prob1 <- as.integer(x[i,]$Proboscis.Seconds)
     prob2 <- as.integer(x[i+1,]$Proboscis.Seconds)
     probPreference <- (prob2 - prob1) / (prob2 + prob1)
@@ -150,21 +161,27 @@ editedEvents <- reactive({
 analyzedEvents <- reactive({
   analyzedEvents <- lapply(removeUntilFirstEvent(editedEvents()), analyzeEvents)
   analyzedEvents <- as.data.frame(do.call(rbind, analyzedEvents))
-  analyzedEvents['Condition'] <- c(paste0(input$well1, ": ", input$solutionA), 
-                                paste0(input$well1, ": ", input$solutionB),
-                                paste0(input$well2, ": ", input$solutionA), 
-                                paste0(input$well2, ": ", input$solutionB),
-                                paste0(input$well3, ": ", input$solutionA), 
-                                paste0(input$well3, ": ", input$solutionB),
-                                paste0(input$well4, ": ", input$solutionA), 
-                                paste0(input$well4, ": ", input$solutionB),
-                                paste0(input$well5, ": ", input$solutionA), 
-                                paste0(input$well5, ": ", input$solutionB),
-                                paste0(input$well6, ": ", input$solutionA), 
-                                paste0(input$well6, ": ", input$solutionB)
-                                )
+  condition <- c(paste0(input$well1, ": ", input$solutionA), 
+                 paste0(input$well1, ": ", input$solutionB),
+                 paste0(input$well2, ": ", input$solutionA), 
+                 paste0(input$well2, ": ", input$solutionB),
+                 paste0(input$well3, ": ", input$solutionA), 
+                 paste0(input$well3, ": ", input$solutionB),
+                 paste0(input$well4, ": ", input$solutionA), 
+                 paste0(input$well4, ": ", input$solutionB)
+  )
+  if (input$flicFlea == "FLIC") {
+    condition <- append(condition, c(paste0(input$well5, ": ", input$solutionA), 
+                                     paste0(input$well5, ": ", input$solutionB),
+                                     paste0(input$well6, ": ", input$solutionA), 
+                                     paste0(input$well6, ": ", input$solutionB)
+                                     )
+                        )
+  }
+  
+  analyzedEvents['Condition'] <- condition
   analyzedEvents['Minutes.Analyzed'] <- rep(timeAnalyzed(removeUntilFirstEvent(editedEvents())), 12)
-  analyzedEvents['Well'] <- names
+  analyzedEvents['Well'] <- whichNames()
   analyzedEvents <- analyzedEvents %>% dplyr::select(Well, Condition, everything())
   analyzedEvents
 })
@@ -177,8 +194,13 @@ analyzedPreference <- reactive({
   if (input$aversive == "A"){
     preferences <- preferences * -1
   }
-  preferences['Condition'] <- c(input$well1, input$well2, input$well3,
-                                input$well4, input$well5, input$well6)
+  condition <- c(input$well1, input$well2, input$well3,
+                 input$well4)
+  
+  if (input$flicFlea == "FLIC"){
+    condition <- append(condition, c(input$well5, input$well6))
+  }
+  preferences['Condition'] <- condition
   preferences <- preferences %>% dplyr::select(Condition, everything())
   
   preferences

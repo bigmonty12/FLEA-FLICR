@@ -46,6 +46,15 @@ observeEvent(input$selectWellsButton, {
   updateTabItems(session, "tabs", "analysis")
 })
 #====Functions used for plotting====
+whichNames <- reactive({
+  if (input$flicFlea == "FLIC"){
+    names <- namesFLIC
+  } else {
+    names <- namesFLEA
+  }
+  names
+})
+
 makeTimeDF <- reactive({
   fin <- readFile()
   # Create "Time" dataframe to use as x-axis in minutes
@@ -53,10 +62,19 @@ makeTimeDF <- reactive({
   time_df <- data.frame(a=time, b=time, c=time, d=time, e=time, f=time, g=time, h=time, i=time, j=time, k=time, l=time)
 })
 
+wellNums <- reactive({
+  if (input$flicFlea == "FLIC"){
+    wells <- 6
+  } else {
+    wells <- 4
+  }
+  wells
+})
+
 getRawWells <- reactive({
   fin <- readFile()
   wells <- fin[5:16]
-  names(wells) <- names
+  names(wells) <- whichNames()
   wells
 })
 
@@ -117,7 +135,9 @@ plotDataAndLine <- function(x, y, z, col, baseline){
 plotwells <- function(a, col, plotLine=FALSE){
   data <- a()
   time_df <- makeTimeDF()
-  par(mfcol = c(2, 6))
+  wells <- wellNums()
+  print(wells)
+  par(mfcol = c(2, wells))
   if (plotLine==FALSE){
     Map(plotData, time_df, data, names(data), col)
   } else {

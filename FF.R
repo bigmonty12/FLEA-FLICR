@@ -15,6 +15,11 @@ b_mean <- BinMean(fin$Dev1_Voltage__0, every = 100)
 
 conversion <- as.data.frame(lapply(fin[2:9], BinMean, every=100)) * 310
 
+# Prob cutoff values for FLEA
+# 3.3 MOhm -> 40
+# 10 MOhm -> 100
+# 20 MOhm -> 155
+# 33 MOhm -> 190 
 # Create dataframe with metadata
 metadata <- fin[1:4]
 # Create dataframe with only well readings
