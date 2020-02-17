@@ -8,6 +8,20 @@ goOnFile <- eventReactive(input$submitButton, {
   input$fin
 })
 
+BinMean <- function (vec, every, na.rm = FALSE) {
+  n <- length(vec)
+  x <- .colMeans(vec, every, n %/% every, na.rm)
+  r <- n %% every
+  if (r) x <- c(x, mean.default(vec[(n - r + 1):n], na.rm = na.rm))
+  x
+}
+
+convertFLEA <- reactive({
+  fin <- readFile()
+  conversion <- as.data.frame(lapply(fin[2:9], BinMean, every=100)) * 310
+  conversion
+})
+
 readFile <- reactive({
   rawFile <- input$fin
   
@@ -16,7 +30,8 @@ readFile <- reactive({
   
   isolate({
     if (input$flicFlea == "FLEA") {
-      raw <- readxl::read_excel(rawFile$datapath, sheet = 2)
+      raw1 <- readxl::read_excel(rawFile$datapath, sheet = 2)
+      raw <- as.data.frame(lapply(raw1[2:9], BinMean, every=100)) * 310
     }
     else {
       raw <- read.csv(rawFile$datapath)
@@ -63,11 +78,7 @@ whichNames <- reactive({
 makeTimeDF <- reactive({
   fin <- readFile()
   # Create "Time" dataframe to use as x-axis in minutes
-  if (input$flicFlea == "FLIC") {
-    time <- seq_len(length(fin[[1]])) / 300
-  } else {
-    time <- seq_len(length(fin[[1]])) / 30000
-  }
+  time <- seq_len(length(fin[[1]])) / 300
   time_df <- data.frame(a=time, b=time, c=time, d=time, e=time, f=time, g=time, h=time, i=time, j=time, k=time, l=time)
 })
 
@@ -80,20 +91,7 @@ wellNums <- reactive({
   wells
 })
 
-BinMean <- function (vec, every, na.rm = FALSE) {
-  n <- length(vec)
-  x <- .colMeans(vec, every, n %/% every, na.rm)
-  r <- n %% every
-  if (r) x <- c(x, mean.default(vec[(n - r + 1):n], na.rm = na.rm))
-  x
-}
 
-convertFLEA <- reactive({
-  fin <- readFile()
-  b_mean <- BinMean(fin[[1]], every = 100)
-  conversion <- as.data.frame(lapply(fin[2:9], BinMean, every=100)) * 310
-  conversion
-})
 
 getRawWells <- reactive({
   fin <- readFile()
@@ -101,7 +99,7 @@ getRawWells <- reactive({
     wells <- fin[5:16]
   }
   else {
-    wells <- converFLEA()
+    wells <- fin[1:8]
   }
   names(wells) <- whichNames()
   wells
@@ -164,9 +162,7 @@ plotDataAndLine <- function(x, y, z, col, baseline){
 plotwells <- function(a, col, plotLine=FALSE){
   data <- a()
   time_df <- makeTimeDF()
-  wells <- wellNums()
-  print(wells)
-  par(mfcol = c(2, wells))
+  par(mfcol = c(2, wellNums()))
   if (plotLine==FALSE){
     Map(plotData, time_df, data, names(data), col)
   } else {
