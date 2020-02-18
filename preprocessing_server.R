@@ -8,6 +8,20 @@ goOnFile <- eventReactive(input$submitButton, {
   input$fin
 })
 
+BinMean <- function (vec, every, na.rm = FALSE) {
+  n <- length(vec)
+  x <- .colMeans(vec, every, n %/% every, na.rm)
+  r <- n %% every
+  if (r) x <- c(x, mean.default(vec[(n - r + 1):n], na.rm = na.rm))
+  x
+}
+
+convertFLEA <- reactive({
+  fin <- readFile()
+  conversion <- as.data.frame(lapply(fin[2:9], BinMean, every=100)) * 310
+  conversion
+})
+
 readFile <- reactive({
   rawFile <- input$fin
   
@@ -15,7 +29,13 @@ readFile <- reactive({
     return(NULL)
   
   isolate({
-    raw <- read.csv(rawFile$datapath)
+    if (input$flicFlea == "FLEA") {
+      raw1 <- readxl::read_excel(rawFile$datapath, sheet = 2)
+      raw <- as.data.frame(lapply(raw1[2:9], BinMean, every=100)) * 310
+    }
+    else {
+      raw <- read.csv(rawFile$datapath)
+    } 
     raw
   })
 })
@@ -46,17 +66,46 @@ observeEvent(input$selectWellsButton, {
   updateTabItems(session, "tabs", "analysis")
 })
 #====Functions used for plotting====
+whichNames <- reactive({
+  if (input$flicFlea == "FLIC"){
+    names <- namesFLIC
+  } else {
+    names <- namesFLEA
+  }
+  names
+})
+
 makeTimeDF <- reactive({
   fin <- readFile()
   # Create "Time" dataframe to use as x-axis in minutes
   time <- seq_len(length(fin[[1]])) / 300
-  time_df <- data.frame(a=time, b=time, c=time, d=time, e=time, f=time, g=time, h=time, i=time, j=time, k=time, l=time)
+  if (input$flicFlea == "FLIC") {
+    time_df <- data.frame(a=time, b=time, c=time, d=time, e=time, f=time, g=time, h=time, i=time, j=time, k=time, l=time)
+  } else {
+    time_df <- data.frame(a=time, b=time, c=time, d=time, e=time, f=time, g=time, h=time)
+  }
 })
+
+wellNums <- reactive({
+  if (input$flicFlea == "FLIC"){
+    wells <- 6
+  } else {
+    wells <- 4
+  }
+  wells
+})
+
+
 
 getRawWells <- reactive({
   fin <- readFile()
-  wells <- fin[5:16]
-  names(wells) <- names
+  if (input$flicFlea == "FLIC"){
+    wells <- fin[5:16]
+  }
+  else {
+    wells <- fin[1:8]
+  }
+  names(wells) <- whichNames()
   wells
 })
 
@@ -77,7 +126,7 @@ baselineBeads <- function(x){
   baselines4 = unlist(baselines3, recursive = F)
   baselines5 <- lapply(baselines4, function(x) as.data.frame(as.matrix(x)))
   baselines6 <- as.data.frame(baselines5)
-  names(baselines6) <- names
+  names(baselines6) <- whichNames()
   baselines <- x - baselines6
   rm(baselines1, baselines2, baselines3, baselines4, baselines5, baselines6)
   baselines
@@ -117,7 +166,7 @@ plotDataAndLine <- function(x, y, z, col, baseline){
 plotwells <- function(a, col, plotLine=FALSE){
   data <- a()
   time_df <- makeTimeDF()
-  par(mfcol = c(2, 6))
+  par(mfcol = c(2, wellNums()))
   if (plotLine==FALSE){
     Map(plotData, time_df, data, names(data), col)
   } else {
