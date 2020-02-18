@@ -20,7 +20,7 @@ output$downloadAnalyzedEvents <- downloadHandler(
     file = paste0("analyzedEvents_", fileName(), ".csv")
   },
   content = function(file){
-    write.csv(analyzedEvents = data.frame(lapply(analyzedEvents(), as.character), stringsAsFactors=FALSE), 
+    write.csv(data.frame(lapply(analyzedEvents(), as.character), stringsAsFactors=FALSE), 
               file)
   }
 )

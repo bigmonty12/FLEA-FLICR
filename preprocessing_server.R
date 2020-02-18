@@ -16,22 +16,16 @@ BinMean <- function (vec, every, na.rm = FALSE) {
   x
 }
 
-convertFLEA <- reactive({
-  fin <- readFile()
-  conversion <- as.data.frame(lapply(fin[2:9], BinMean, every=100)) * 310
-  conversion
-})
-
 readFile <- reactive({
   rawFile <- input$fin
   
   if (is.null(rawFile))
     return(NULL)
-  
   isolate({
     if (input$flicFlea == "FLEA") {
       raw1 <- readxl::read_excel(rawFile$datapath, sheet = 2)
       raw <- as.data.frame(lapply(raw1[2:9], BinMean, every=100)) * 310
+      rm(raw1)
     }
     else {
       raw <- read.csv(rawFile$datapath)
