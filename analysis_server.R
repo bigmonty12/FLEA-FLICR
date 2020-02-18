@@ -70,9 +70,9 @@ editEvents <- function(x) {
 #==== Remove data until first event of the arena ==== 
 removeUntilFirstEvent <- function(x){
   rows <- input$length * 60 * 5
-  # df <- data.frame(matrix(0, ncol = 12))
+  rowNum <- wellNums() * 2 - 1
   df <- list()
-  for (i in seq(1, 11, 2)) {
+  for (i in seq(1, rowNum, 2)) {
     # Time of first event in arena
     m <- min(rle(x[[i]])$lengths[1], rle(x[[i+1]])$lengths[1])
     # Length of analysis min(30 minutes and remain length after removal until first event)
@@ -173,7 +173,8 @@ analyzedEvents <- reactive({
   }
   
   analyzedEvents['Condition'] <- condition
-  analyzedEvents['Minutes.Analyzed'] <- rep(timeAnalyzed(removeUntilFirstEvent(editedEvents())), 12)
+  analyzedEvents['Minutes.Analyzed'] <- rep(timeAnalyzed(removeUntilFirstEvent(editedEvents())), 
+                                            wellNums()*2)
   analyzedEvents['Well'] <- whichNames()
   analyzedEvents <- analyzedEvents %>% dplyr::select(Well, Condition, everything())
   analyzedEvents
