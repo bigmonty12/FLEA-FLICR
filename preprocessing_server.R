@@ -23,7 +23,7 @@ readFile <- reactive({
     return(NULL)
   isolate({
     if (input$flicFlea == "FLEA") {
-      raw1 <- readxl::read_excel(rawFile$datapath, sheet = 2)
+      raw1 <- read.csv(rawFile$datapath)
       raw <- as.data.frame(lapply(raw1[2:9], BinMean, every=100)) * 310
       rm(raw1)
     }
