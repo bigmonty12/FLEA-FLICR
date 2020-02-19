@@ -5,7 +5,7 @@ tabItem(tabName = "preprocessing",
         waiter::use_waiter(),
         fluidRow(
           box(selectInput("flicFlea", "Choose Assay", choices = c("FLIC", "FLEA")), width = 2),
-          box(fileInput("fin", "Select Raw File", accept = c('text/csv', '.csv', '.xlsx')),
+          box(fileInput("fin", "Select Raw File", accept = c('text/csv', '.csv')),
               actionButton("submitButton", "Submit and View Wells"),
               width = 5),
           box(selectInput("baselineMethod", "Choose Baseline Method",
