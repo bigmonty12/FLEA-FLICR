@@ -1,6 +1,6 @@
 library(dplyr)
 
-#fin <- read.csv("012920_DFM_5.csv")
+fin <- read.csv("012920_DFM_5.csv")
 #fin <- read.csv("../../../FLIC-FLEA/191003 DFM_14.csv")
 fin <- readxl::read_excel("020620_1_Analysis.xlsx", sheet = 2)
 
@@ -67,9 +67,15 @@ plot(subtractBaselines, col="blue", type="l")
 # Convert raw value to none (0), leg (1), or proboscis (2) event
 labeledEvents <- subtractBaselines
 labeledEvents[labeledEvents < 10] <- 0
-labeledEvents[labeledEvents > 0 & labeledEvents < 100] <- 1
-labeledEvents[labeledEvents >= 100] <- 2
-
+oddEvents <- labeledEvents[c(1,3,5,7,9,11)]
+evenEvents <- labeledEvents[c(2,4,6,8,10,12)]
+oddEvents[oddEvents > 0 & oddEvents < 100] <- 1
+oddEvents[oddEvents >= 100] <- 2
+evenEvents[evenEvents > 0 & evenEvents < 100] <- 1
+evenEvents[evenEvents >= 100] <- 2
+labeledEvents1 <- cbind(oddEvents, evenEvents) %>% select(
+  "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9", "W10", "W11", "W12"
+)
 editEvents <- function(x) {
   runs <- rle(as.integer(x))
   

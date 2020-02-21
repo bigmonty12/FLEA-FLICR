@@ -12,6 +12,20 @@ tabItem(tabName = "analysis",
             width = 7)
         ),
         conditionalPanel(
+          condition = "input.flicFlea == 'FLEA' && input.describeWellsButton > 0",
+          fluidRow(
+            box(
+              shiny::selectInput("resistanceA", "Resistance A",
+                                c("3.3 MOhm", "10 MOhm", "20 MOhm", "33 MOhm")
+                                ),
+              shiny::selectInput("resistanceB", "Resistance B",
+                                c("3.3 MOhm", "10 MOhm", "20 MOhm", "33 MOhm")
+                                )
+                )       
+          )
+                
+        ),
+        conditionalPanel(
           condition = "input.describeWellsButton > 0",
           fluidRow(
             box(

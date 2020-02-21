@@ -141,8 +141,23 @@ analyzePreference <- function(x) {
 
 labelEvents <- reactive({
   labeledEvents <- removeBlips()
-  labeledEvents[labeledEvents > 0 & labeledEvents < 100] <- 1
-  labeledEvents[labeledEvents >= 100] <- 2
+  if (input$flicFlea == "FLIC"){
+    labeledEvents[labeledEvents > 0 & labeledEvents < 100] <- 1
+    labeledEvents[labeledEvents >= 100] <- 2
+  } else {
+    probCutoffA <- car::recode(input$resistanceA, "'3.3 MOhm'=40; '10 MOhm'=100; '20 MOhm'=155; '33 MOhm'=190;")
+    probCutoffB <- car::recode(input$resistanceB, "'3.3 MOhm'=40; '10 MOhm'=100; '20 MOhm'=155; '33 MOhm'=190;")
+    oddEvents <- labeledEvents[c(1,3,5,7)]
+    evenEvents <- labeledEvents[c(2,4,6,8)]
+    oddEvents[oddEvents > 0 & oddEvents < probCutoffA] <- 1
+    oddEvents[oddEvents >= probCutoffA] <- 2
+    evenEvents[evenEvents > 0 & evenEvents < probCutoffB] <- 1
+    evenEvents[evenEvents >= probCutoffB] <- 2
+    labeledEvents <- cbind(oddEvents, evenEvents) %>% select(
+      "1A", "1B", "2A", "2B", "3A", "3B", "4A", "4B"
+    )
+    rm(oddEvents, evenEvents)
+  }
   labeledEvents
 })
 
