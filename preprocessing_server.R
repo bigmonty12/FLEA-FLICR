@@ -24,7 +24,9 @@ readFile <- reactive({
   isolate({
     if (input$flicFlea == "FLEA") {
       raw1 <- read.csv(rawFile$datapath)
-      raw <- as.data.frame(lapply(raw1[2:9], BinMean, every=100)) * 310
+      # Change FLEA sampling rate from 500 Hz to 100 Hz
+      # raw <- as.data.frame(lapply(raw1[2:9], BinMean, every=100)) * 310
+      raw <- as.data.frame(lapply(raw1[2:9], BinMean, every=20)) * 310
       rm(raw1)
     }
     else {
