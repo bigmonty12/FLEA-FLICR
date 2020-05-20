@@ -273,3 +273,12 @@ output$downloadRemovedBlips <- downloadHandler(
     dev.off()
   }
 )
+
+output$downloadData <- downloadHandler(
+  filename = function() {
+    file = paste0("removedBlips_", fileName(), ".csv")
+  },
+  content = function(file){
+    write.csv(removeBlips(), file)
+  }
+)

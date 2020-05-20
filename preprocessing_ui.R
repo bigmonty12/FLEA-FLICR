@@ -41,7 +41,8 @@ tabItem(tabName = "preprocessing",
           fluidRow(
             box(plotOutput("removedBlipsPlots"), width = 12,
                 actionButton("selectWellsButton", "Go to Analysis"),
-                downloadButton("downloadRemovedBlips", "Download Plots"))
+                downloadButton("downloadRemovedBlips", "Download Plots"),
+                downloadButton("downloadData", "Download Cleaned Data"))
           )
         )
 )
