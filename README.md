@@ -1,12 +1,12 @@
 # FLEA-FLICR
-### Authors
+## *Authors*
 Austin Montgomery, Adrian Rothenfluh, University of Utah, Salt Lake City, UT
-### Description
+## *Description*
 FLEA-FLICR is an R Shiny app that is used to analyze FLIC and FLEA experiments in Drosophila. The app can be accessed via https://bigmonty12.shinyapps.io/FLEA-FLICR/ or deployed locally using RStudio (after pulling this repository).
 The Rothenfluh lab developed the FLEA (Fly Liquid-food Electroshock Assay) as a way to measure internal motivation of Drosophila. For more details, see our [preprint](https://www.biorxiv.org/content/10.1101/2020.02.10.942508v1).
-### Interface
+## *Interface*
 The home tab of the FLEA-FLICR allows for selecting the assay of choice (FLIC or FLEA) and uploading the raw data (in .csv form) from the assay. After uploading the data, each well's data is visualized as the user goes through the preprocessing steps (baseline creating, baseline subtraction, and "blip" removal). Each graph and the resulting cleaned data can be downloaded. After data is cleaned, go to the analysis tab where interactive event and preference data tables are created. Both tables can be downloaded as well.
-### Methods
+## *Methods*
 #### Initial Preprocessing
 The output of FLIC and FLEA assays is a file that measures current over time for each well in the assay. Because the FLEA is sampled at a higher frequency than the FLIC, the FLEA data is first averaged over the required timepoints to be equivalent to the sampling frequencing of the FLIC. Users can visualize the rest of the data cleaning process through the automatic plotting of the assay data.
 #### Data Cleaning
@@ -15,5 +15,5 @@ After this adjustment, users are able to create a baseline for the data using tw
 For the FLIC, values greater than 0 and less than 100 (0 < x < 100) are classified as leg events while values greater than 100 are called as proboscis events. In the FLEA, the threshold for calling an event as a proboscis event depends on the resistance of the well (3.3 MOhm=40; 10 MOhm=100; 20 MOhm=155; 33 MOhm=190). Leg events lasting more than 4 seconds and proboscis events lasting longer than 40 seconds are reclassified as nonevents.
 #### Results
 Afte cleaning the data, the app takes the user to the next tab where two different tables can be viewed. The first table (Event Data) shows the number of occurrences of each type of event as well as the total time and average time for each event type. It additionally calculates the percentage of all events that were leg events. In the second table (Preference Data), the solution preference is calculated for leg, proboscis, and total events. Solution preference is calculated by taking the difference in total time (of respective event type) interacted between the two wells and dividing it by the sum of the time interacted with both wells. If there is no preference, the resulting value is 0. Increasing preference is indicated by values approaching -1 or 1.
-### Notes
+## Notes
 Note that in order to analyze a FLEA experiment, the Excel file with the data must first be converted to a .csv file. 
