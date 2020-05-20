@@ -126,13 +126,13 @@ analyzePreference <- function(x) {
     leg2 <- as.integer(x[i+1,]$Leg.Seconds)
     legPreference <- (leg2 - leg1) / (leg2 + leg1)
     totalPreference <- ((prob2 + leg2) - (prob1 + leg1)) / ((prob2 + leg2) + (prob1 + leg1))
-    events1 <- as.integer(x[i,]$Leg.Seconds)
-    events2 <- as.integer(x[i+1,]$Leg.Seconds)
-    totalEventPreference <- (events2 - events1) / (events2 + events1)
+    #events1 <- as.integer(x[i,]$Leg.Seconds)
+    #events2 <- as.integer(x[i+1,]$Leg.Seconds)
+    #totalEventPreference <- (events2 - events1) / (events2 + events1)
     preferences <- list("Proboscis.Preference" = probPreference,
                         "Leg.Preference" = legPreference,
-                        "Total.Preference" = totalPreference,
-                        "Event.Preference" = totalEventPreference)
+                        "Total.Preference" = totalPreference)
+                       # "Event.Preference" = totalEventPreference)
     totalPreferences[[z]] <- preferences
     z <- z + 1
   }
