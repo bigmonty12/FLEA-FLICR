@@ -2,7 +2,7 @@
 ## *Authors*
 Austin Montgomery, Adrian Rothenfluh, University of Utah, Salt Lake City, UT
 ## *Description*
-FLEA-FLICR is an R Shiny app that is used to analyze FLIC and FLEA experiments in Drosophila. The app can be accessed via https://bigmonty12.shinyapps.io/FLEA-FLICR/ or deployed locally using RStudio (after pulling this repository).
+FLEA-FLICR is an R Shiny app that is used to analyze [FLIC](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0101107) and FLEA experiments in Drosophila. The app can be accessed via https://bigmonty12.shinyapps.io/FLEA-FLICR/ or deployed locally using RStudio (after pulling this repository).
 The Rothenfluh lab developed the FLEA (Fly Liquid-food Electroshock Assay) as a way to measure internal motivation of Drosophila. For more details, see our [preprint](https://www.biorxiv.org/content/10.1101/2020.02.10.942508v1).
 ## *Interface*
 The home tab of the FLEA-FLICR allows for selecting the assay of choice (FLIC or FLEA) and uploading the raw data (in .csv form) from the assay. After uploading the data, each well's data is visualized as the user goes through the preprocessing steps (baseline creating, baseline subtraction, and "blip" removal). Each graph and the resulting cleaned data can be downloaded. After data is cleaned, go to the analysis tab where interactive event and preference data tables are created. Both tables can be downloaded as well.
