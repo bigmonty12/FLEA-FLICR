@@ -16,10 +16,10 @@ tabItem(tabName = "analysis",
           fluidRow(
             box(
               shiny::selectInput("resistanceA", "Resistance A",
-                                c("3.3 MOhm", "10 MOhm", "20 MOhm", "33 MOhm")
+                                c("3.3 MOhm", "4.7 MOhm", "10 MOhm", "20 MOhm", "33 MOhm")
                                 ),
               shiny::selectInput("resistanceB", "Resistance B",
-                                c("3.3 MOhm", "10 MOhm", "20 MOhm", "33 MOhm")
+                                c("3.3 MOhm", "4.7 MOhm", "10 MOhm", "20 MOhm", "33 MOhm")
                                 )
                 )       
           )

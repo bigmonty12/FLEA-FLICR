@@ -145,8 +145,8 @@ labelEvents <- reactive({
     labeledEvents[labeledEvents > 0 & labeledEvents < 100] <- 1
     labeledEvents[labeledEvents >= 100] <- 2
   } else {
-    probCutoffA <- car::recode(input$resistanceA, "'3.3 MOhm'=40; '10 MOhm'=100; '20 MOhm'=155; '33 MOhm'=190;")
-    probCutoffB <- car::recode(input$resistanceB, "'3.3 MOhm'=40; '10 MOhm'=100; '20 MOhm'=155; '33 MOhm'=190;")
+    probCutoffA <- car::recode(input$resistanceA, "'3.3 MOhm'=40; '4.7 MOhm'=56; '10 MOhm'=100; '20 MOhm'=155; '33 MOhm'=190;")
+    probCutoffB <- car::recode(input$resistanceB, "'3.3 MOhm'=40; '4.7 MOhm'=56; '10 MOhm'=100; '20 MOhm'=155; '33 MOhm'=190;")
     oddEvents <- labeledEvents[c(1,3,5,7)]
     evenEvents <- labeledEvents[c(2,4,6,8)]
     oddEvents[oddEvents > 0 & oddEvents < probCutoffA] <- 1
