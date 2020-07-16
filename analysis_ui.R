@@ -45,7 +45,7 @@ tabItem(tabName = "analysis",
             box(
               textInput("solutionA", "Solution A"),
               textInput("solutionB", "Solution B"),
-              selectInput("aversive", "Aversive Compound", c("A", "B"), selected = "B"),
+              selectInput("aversive", "Positive Preference Compound", c("A", "B"), selected = "B"),
               numericInput("length", "How many minutes to analyze?", value=30),
               width = 5,
               shinyjs::disabled(actionButton("analyzeDataButton", "Analyze Data"))
