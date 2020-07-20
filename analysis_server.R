@@ -42,103 +42,6 @@ observeEvent(input$describeWellsButton, {
   })
 })
 
-#====Convert data to none, leg, or probosic event====
-editEvents <- function(x) {
-  runs <- rle(as.integer(x))
-  
-  for (i in seq_along(runs$values)) {
-    # leg events sandwiching a proboscis event are converted to proboscis events
-    if (runs$values[i] == 2) {
-      if (runs$values[i-1] == 1) runs$values[i-1] = 2
-      if (runs$values[i+1] == 1) runs$values[i+1] = 2
-    }
-  }
-  new_runs <- rle(inverse.rle(runs))
-  for (i in seq_along(new_runs$values)) {
-    if (new_runs$values[i] == 1) {
-      # if "leg event" is longer than 4 sec, change to none event
-      if (new_runs$lengths[i] > 4*5) new_runs$values[i] = 0
-    }
-    if (new_runs$values[i] == 2) {
-      # if "proboscis event" is longer than 40 sec, change to none event
-      if (new_runs$lengths[i] > 40*5) new_runs$values[i] = 0
-    }
-  }
-  return(inverse.rle(new_runs))
-}
-
-#==== Remove data until first event of the arena ==== 
-removeUntilFirstEvent <- function(x){
-  rows <- input$length * 60 * 5
-  rowNum <- wellNums() * 2 - 1
-  df <- list()
-  for (i in seq(1, rowNum, 2)) {
-    # Time of first event in arena
-    m <- min(rle(x[[i]])$lengths[1], rle(x[[i+1]])$lengths[1])
-    # Length of analysis min(30 minutes and remain length after removal until first event)
-    l <- min(rows, length(tail(x[[i]], -m)))
-    
-    df[[i]] <- head(tail(x[[i]], -m), l)
-    df[[i+1]] <- head(tail(x[[i+1]], -m), l)
-  }
-  df <- data.frame(lapply(df, "length<-", max(lengths(df))))
-  df <- data.frame(df)
-  colnames(df) <- whichNames()
-  return(df)
-}
-
-timeAnalyzed <- function(x){
-  return(length(x[[1]]) / 300)
-}
-
-analyzeEvents <- function(x) {
-  legEventIndex <- which(rle(x)$values == 1)
-  legEventNums <- length(legEventIndex)
-  legEventSecs <- sum(rle(x)$lengths[legEventIndex]) / 5
-  probEventIndex <- which(rle(x)$values == 2)
-  probEventNums <- length(probEventIndex)
-  probEventSecs <- sum(rle(x)$lengths[probEventIndex]) / 5
-  totalEventNums <- legEventNums + probEventNums
-  legAveEventSecs <- legEventSecs / legEventNums
-  probAveEventSecs <- probEventSecs / probEventNums
-  legEventPercentage <- legEventNums / totalEventNums
-  eventsAnalyzed <- list("Leg.Events" = legEventNums,
-                         "Proboscis.Events" = probEventNums,
-                         "Total.Events" = totalEventNums,
-                         "Leg.Percentage" = legEventPercentage,
-                         "Leg.Seconds" = legEventSecs,
-                         "Leg.Average.Seconds" = legAveEventSecs,
-                         "Proboscis.Seconds" = probEventSecs,
-                         "Proboscis.Average.Seconds" = probAveEventSecs
-  )
-  return(eventsAnalyzed)
-}
-
-analyzePreference <- function(x) {
-  totalPreferences <- list()
-  end <- wellNums() * 2 - 1
-  z = 1
-  for (i in seq(1, end, 2)) {
-    prob1 <- as.integer(x[i,]$Proboscis.Seconds)
-    prob2 <- as.integer(x[i+1,]$Proboscis.Seconds)
-    probPreference <- (prob2 - prob1) / (prob2 + prob1)
-    leg1 <- as.integer(x[i,]$Leg.Seconds)
-    leg2 <- as.integer(x[i+1,]$Leg.Seconds)
-    legPreference <- (leg2 - leg1) / (leg2 + leg1)
-    totalPreference <- ((prob2 + leg2) - (prob1 + leg1)) / ((prob2 + leg2) + (prob1 + leg1))
-    events1 <- as.integer(x[i,]$Total.Events)
-    events2 <- as.integer(x[i+1,]$Total.Events)
-    totalEventPreference <- (events2 - events1) / (events2 + events1)
-    preferences <- list("Proboscis.Preference" = probPreference,
-                        "Leg.Preference" = legPreference,
-                        "Total.Preference" = totalPreference,
-                        "Event.Preference" = totalEventPreference)
-    totalPreferences[[z]] <- preferences
-    z <- z + 1
-  }
-  return(totalPreferences)
-} 
-
 labelEvents <- reactive({
   labeledEvents <- removeBlips()
   if (input$flicFlea == "FLIC"){
@@ -167,7 +70,7 @@ editedEvents <- reactive({
 })
 
 analyzedEvents <- reactive({
-  analyzedEvents <- lapply(removeUntilFirstEvent(editedEvents()), analyzeEvents)
+  analyzedEvents <- lapply(removeUntilFirstEvent(editedEvents(), input$length, wellNums(), whichNames()), analyzeEvents)
   analyzedEvents <- as.data.frame(do.call(rbind, analyzedEvents))
   condition <- c(paste0(input$well1, ": ", input$solutionA), 
                  paste0(input$well1, ": ", input$solutionB),
@@ -188,7 +91,7 @@ analyzedEvents <- reactive({
   }
   
   analyzedEvents['Condition'] <- condition
-  analyzedEvents['Minutes.Analyzed'] <- rep(timeAnalyzed(removeUntilFirstEvent(editedEvents())), 
+  analyzedEvents['Minutes.Analyzed'] <- rep(timeAnalyzed(removeUntilFirstEvent(editedEvents(), input$length, wellNums(), whichNames())), 
                                             wellNums()*2)
   analyzedEvents['Well'] <- whichNames()
   analyzedEvents <- analyzedEvents %>% dplyr::select(Well, Condition, everything())
@@ -196,7 +99,7 @@ analyzedEvents <- reactive({
 })
 
 analyzedPreference <- reactive({
-  preferences <- analyzePreference(analyzedEvents())
+  preferences <- analyzePreference(analyzedEvents(), wellNums())
   preferences <- as.data.frame(do.call(rbind, preferences))
   preferences = data.frame(lapply(preferences, as.numeric))
   
@@ -213,6 +116,18 @@ analyzedPreference <- reactive({
   preferences <- preferences %>% dplyr::select(Condition, everything())
   
   preferences
+})
+
+tidyLegBouts <- reactive({
+  tidied <- tidy_bouts(removeUntilFirstEvent(editedEvents(), input$length, wellNums(), whichNames()), 'Leg')
+  colnames(tidied) <- whichNames()
+  tidied
+})
+
+tidyProbBouts <- reactive({
+  tidied <- tidy_bouts(removeUntilFirstEvent(editedEvents(), input$length, wellNums(), whichNames()), 'Proboscis')
+  colnames(tidied) <- whichNames()
+  tidied
 })
 
 observe({

@@ -1,20 +1,12 @@
 # preprocessing_server.R
 # Preprocessing tab of Shiny app
 
-#====Functions used on input file====
+#====Pre-process input file====
 inFile <- reactive(input$fin)
 
 goOnFile <- eventReactive(input$submitButton, {
   input$fin
 })
-
-BinMean <- function (vec, every, na.rm = FALSE) {
-  n <- length(vec)
-  x <- .colMeans(vec, every, n %/% every, na.rm)
-  r <- n %% every
-  if (r) x <- c(x, mean.default(vec[(n - r + 1):n], na.rm = na.rm))
-  x
-}
 
 readFile <- reactive({
   rawFile <- input$fin
@@ -25,7 +17,6 @@ readFile <- reactive({
     if (input$flicFlea == "FLEA") {
       raw1 <- read.csv(rawFile$datapath)
       # Change FLEA sampling rate from 500 Hz to 100 Hz
-      # raw <- as.data.frame(lapply(raw1[2:9], BinMean, every=100)) * 310
       raw <- as.data.frame(lapply(raw1[2:9], BinMean, every=20)) * 310
       rm(raw1)
     }
@@ -91,8 +82,6 @@ wellNums <- reactive({
   wells
 })
 
-
-
 getRawWells <- reactive({
   fin <- readFile()
   if (input$flicFlea == "FLIC"){
@@ -105,34 +94,12 @@ getRawWells <- reactive({
   wells
 })
 
-baselineRunMed <- function(x){
-  n <- length(x[[1]])
-  k <- (1 + 2 * min((n-1)%/% 2, ceiling(0.1*n))) # Turlach default for k
-  m <- min(k, 24001)
-  # Use running median to find baseline for each well
-  baselines <- lapply(x, runmed, k=m)
-  baselines
-}
-
-baselineBeads <- function(x){
-  source("beads.R")
-  baselines1 <- baselineRunMed(x)
-  baselines2 <- lapply(x - baselines1, beads, 1, 0.05, 6, 0.6*0.5, 0.6*5, 0.6*4)
-  baselines3 <- rlist::list.map(baselines2, as.list(.[1]))
-  baselines4 = unlist(baselines3, recursive = F)
-  baselines5 <- lapply(baselines4, function(x) as.data.frame(as.matrix(x)))
-  baselines6 <- as.data.frame(baselines5)
-  names(baselines6) <- whichNames()
-  baselines <- x - baselines6
-  rm(baselines1, baselines2, baselines3, baselines4, baselines5, baselines6)
-  baselines
-}
-
 findBaseline <- reactive({
   if (input$baselineMethod == "Running Median (fast, less precise)"){
     baselines <- as.data.frame(baselineRunMed(getRawWells()))
   } else {
-    baselines <- baselineBeads(getRawWells())
+    baselines <- baselineBeads(getRawWells(), whichNames())
+    colnames(baselines) <- whichNames()
   }
   baselines
 })
@@ -148,16 +115,7 @@ removeBlips <- reactive({
   subtractBaselines
 })
 
-plotData <- function(x, y, z, col){
-  plot(x, y=y, main=z, col=col, type="l",
-       xlab="Time [min]", ylab="Intensity [au]")
-}
-
-plotDataAndLine <- function(x, y, z, col, baseline){
-  plot(x, y=y, main=z, col=col, type="l",
-       xlab="Time [min]", ylab="Intensity [au]")
-  lines(x=x, y=baseline, lwd=2, col="blue")
-}
+#====Render plots====
 
 plotwells <- function(a, col, plotLine=FALSE){
   data <- a()
@@ -190,7 +148,7 @@ plotRemovedBlips <- function(){
   plots <- plotwells(removeBlips, "forestgreen")
   plots
 }
-#====Render plots====
+
 rawW <- waiter::Waiter$new(id="rawPlots", html = spin_pulsar())
 output$rawPlots <- renderPlot({
   goOnFile()
