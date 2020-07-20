@@ -21,6 +21,22 @@ tabItem(tabName = "results",
               
               width = 12
             )
+          ),
+          h2("Leg Event Lengths (seconds)"),
+          fluidRow(
+            box(
+              DT::dataTableOutput("legBouts"),
+              downloadButton("downloadLegBouts", "Download Leg Event Lengths"),
+              width = 12
+            )
+          ),
+          h2("Proboscis Event Lengths (seconds)"),
+          fluidRow(
+            box(
+              DT::dataTableOutput("probBouts"),
+              downloadButton("downloadProbBouts", "Download Proboscis Event Lengths"),
+              width = 12
+            )
           )
         )
 )
