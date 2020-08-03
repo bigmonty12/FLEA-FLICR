@@ -54,15 +54,13 @@ output$downloadLegBouts <- downloadHandler(
   },
   content = function(file){
     goOnAnalyzeData()
-    cleanData <- removeUntilFirstEvent(editedEvents())
-    x <- lapply(cleanData, bouts, 'Leg')
-    cleanData <- t(plyr::ldply(x, rbind, .id=NULL))
+    tidyBouts <- tidyLegBouts()
     if(input$flicFlea == 'FLIC'){
-      colnames(cleanData) <- namesFLIC
+      colnames(tidyBouts) <- namesFLIC
     } else{
-      colnames(cleanData) <- namesFLEA
+      colnames(tidyBouts) <- namesFLEA
     }
-    write.csv(cleanData / 5, file)
+    write.csv(tidyBouts, file)
   }
 )
 
@@ -72,14 +70,12 @@ output$downloadProbBouts <- downloadHandler(
   },
   content = function(file){
     goOnAnalyzeData()
-    cleanData <- removeUntilFirstEvent(editedEvents())
-    x <- lapply(cleanData, bouts, 'Proboscis')
-    cleanData <- t(plyr::ldply(x, rbind, .id=NULL))
+    tidyBouts <- tidyProbBouts()
     if(input$flicFlea == 'FLIC'){
-      colnames(cleanData) <- namesFLIC
+      colnames(tidyBouts) <- namesFLIC
     } else{
-      colnames(cleanData) <- namesFLEA
+      colnames(tidyBouts) <- namesFLEA
     }
-    write.csv(cleanData / 5, file)
+    write.csv(tidyBouts, file)
   }
 )
