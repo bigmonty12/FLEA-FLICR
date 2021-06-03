@@ -134,15 +134,15 @@ analyzePreference <- function(x, wells) {
   end <- wells * 2 - 1
   z = 1
   for (i in seq(1, end, 2)) {
-    prob1 <- as.integer(x[i,]$Proboscis.Seconds)
-    prob2 <- as.integer(x[i+1,]$Proboscis.Seconds)
+    prob1 <- as.numeric(x[i,]$Proboscis.Seconds)
+    prob2 <- as.numeric(x[i+1,]$Proboscis.Seconds)
     probPreference <- (prob2 - prob1) / (prob2 + prob1)
-    leg1 <- as.integer(x[i,]$Leg.Seconds)
-    leg2 <- as.integer(x[i+1,]$Leg.Seconds)
+    leg1 <- as.numeric(x[i,]$Leg.Seconds)
+    leg2 <- as.numeric(x[i+1,]$Leg.Seconds)
     legPreference <- (leg2 - leg1) / (leg2 + leg1)
     totalPreference <- ((prob2 + leg2) - (prob1 + leg1)) / ((prob2 + leg2) + (prob1 + leg1))
-    events1 <- as.integer(x[i,]$Total.Events)
-    events2 <- as.integer(x[i+1,]$Total.Events)
+    events1 <- as.numeric(x[i,]$Total.Events)
+    events2 <- as.numeric(x[i+1,]$Total.Events)
     totalEventPreference <- (events2 - events1) / (events2 + events1)
     preferences <- list("Proboscis.Preference" = probPreference,
                         "Leg.Preference" = legPreference,
