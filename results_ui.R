@@ -10,6 +10,7 @@ tabItem(tabName = "results",
             box(
               DT::dataTableOutput("analyzedEvents"),
               downloadButton("downloadAnalyzedEvents", "Download Analyzed Events"),
+              downloadButton("downloadAllEventsAndTime", "Download Events with Time"),
               width = 12
             )
           ),
@@ -18,7 +19,6 @@ tabItem(tabName = "results",
             box(
               DT::dataTableOutput("analyzedPreference"),
               downloadButton("downloadAnalyzedPreference", "Download Analyzed Preference"),
-              
               width = 12
             )
           ),

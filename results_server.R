@@ -38,6 +38,15 @@ output$downloadAnalyzedEvents <- downloadHandler(
   }
 )
 
+output$downloadAllEventsAndTime <- downloadHandler(
+  filename = function(){
+    file = paste0("eventsWithTime_", fileName(), ".csv")
+  },
+  content = function(file){
+    write.csv(wellEncodedTimeEvents(), quote = F, row.names = F, file)
+  }
+)
+
 output$downloadAnalyzedPreference <- downloadHandler(
   filename = function(){
     file = paste0("analyzedPreference_", fileName(), ".csv")
