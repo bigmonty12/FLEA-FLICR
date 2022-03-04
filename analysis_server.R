@@ -66,6 +66,7 @@ labelEvents <- reactive({
 
 editedEvents <- reactive({
   editedEvents <- as.data.frame(lapply(labelEvents(), editEvents))
+  #write.csv(editedEvents, quote = F, row.names = F, "editedEvents_012920_DFM_5.csv")
   editedEvents
 })
 
@@ -76,31 +77,29 @@ wellEncodedTimeEvents <- reactive({
   editedEventsTime <- cbind(readFile()[,1:3], editedEvents())
   # Column names of df
   names(editedEventsTime) <- c(c("Date", "Time", "MSec"), namesFLIC)
-  # Remove rows where there is no activity in any wells
-  keepOnlyEvents <- editedEventsTime %>% filter(rowSums(editedEventsTime[,4:15]) > 0)
   
   # Keep time when event begins
-  idx <- unlist(lapply(keepOnlyEvents[,4:15], function(x){
+  idx <- unlist(lapply(editedEventsTime[,4:15], function(x){
     (cumsum(rle(x)[[1]]))[rle(x)[[2]]>0] - rle(x)[[1]][rle(x)[[2]]>0]
   })) + 1
   
   # Length of bout * 0.2 ms
-  boutLength <- unlist(lapply(keepOnlyEvents[,4:15], function(x){
+  boutLength <- unlist(lapply(editedEventsTime[,4:15], function(x){
     rle(x)[[1]][rle(x)[[2]]>0] * 0.2
   }))
   
   # Leg vs proboscis event
-  boutType <- unlist(lapply(keepOnlyEvents[,4:15], function(x){
+  boutType <- unlist(lapply(editedEventsTime[,4:15], function(x){
     rle(x)[[2]][rle(x)[[2]]>0]
   }))
   
   # Specify well where event occurs
-  boutWell <- rep(namesFLIC, unlist((lapply(keepOnlyEvents[,4:15], function(x){
+  boutWell <- rep(namesFLIC, unlist((lapply(editedEventsTime[,4:15], function(x){
     length(rle(x)[[2]][rle(x)[[2]]>0])
   }))))
   
   # Merge previous vectors and merge date/time into one column
-  timeLengthTypeWell <- cbind(keepOnlyEvents[idx,1:3], boutLength, boutType, boutWell) %>%
+  timeLengthTypeWell <- cbind(editedEventsTime[idx,1:3], boutLength, boutType, boutWell) %>%
     mutate(Time = strptime(paste(Date, Time), format="%m/%d/%Y %H:%M:%S") + MSec*10^-3,
       .keep = "unused",
       .before = boutLength
@@ -112,7 +111,7 @@ wellEncodedTimeEvents <- reactive({
   
   # Create matrix with each well having its own column
   wideEvents <- timeLengthTypeWell %>%
-    spread(boutWell, boutLength, fill=NA)
+    tidyr::spread(boutWell, boutLength, fill=NA)
   
   wideEvents
 })
