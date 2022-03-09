@@ -40,10 +40,10 @@ output$downloadAnalyzedEvents <- downloadHandler(
 
 output$downloadAllEventsAndTime <- downloadHandler(
   filename = function(){
-    file = paste0("eventsWithTime_", fileName(), ".csv")
+    file = paste0("eventsWithTime_", fileName(), ".xlsx")
   },
   content = function(file){
-    write.csv(wellEncodedTimeEvents(), quote = F, row.names = F, file)
+    openxlsx::write.xlsx(wellEncodedTimeEvents(), file = file)
   }
 )
 

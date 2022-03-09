@@ -177,29 +177,29 @@ tidy_bouts <- function(df, type){
 
 # Time Events for Travis
 # DFM_5 <- read.csv("012920_DFM_5.csv")
-# editedEvents_012920_DFM_5 <- read_csv("editedEvents_012920_DFM_5.csv")
+# editedEvents_012920_DFM_5 <- read.csv("editedEvents_012920_DFM_5.csv")
 # editedEventsTime <- cbind(DFM_5[,1:3], editedEvents_012920_DFM_5)
 # names(editedEventsTime) <- c(c("Date", "Time", "MSec"), namesFLIC)
 # #keepOnlyEvents <- editedEventsTime %>% filter(rowSums(editedEventsTime[,4:15]) > 0)
 # idx <- unlist(lapply(editedEventsTime[,4:15], function(x){
 #     (cumsum(rle(x)[[1]]))[rle(x)[[2]]>0] - rle(x)[[1]][rle(x)[[2]]>0]
 #   })) + 1
-#   
+# 
 #   # Length of bout * 0.2 ms
 #   boutLength <- unlist(lapply(editedEventsTime[,4:15], function(x){
 #     rle(x)[[1]][rle(x)[[2]]>0] * 0.2
 #   }))
-#   
+# 
 #   # Leg vs proboscis event
 #   boutType <- unlist(lapply(editedEventsTime[,4:15], function(x){
 #     rle(x)[[2]][rle(x)[[2]]>0]
 #   }))
-#   
+# 
 #   # Specify well where event occurs
 #   boutWell <- rep(namesFLIC, unlist((lapply(editedEventsTime[,4:15], function(x){
 #     length(rle(x)[[2]][rle(x)[[2]]>0])
 #   }))))
-#   
+# 
 #   # Merge previous vectors and merge date/time into one column
 #   timeLengthTypeWell <- cbind(editedEventsTime[idx,1:3], boutLength, boutType, boutWell) %>%
 #     mutate(Time = strptime(paste(Date, Time), format="%m/%d/%Y %H:%M:%S") + MSec*10^-3,
@@ -207,11 +207,20 @@ tidy_bouts <- function(df, type){
 #       .before = boutLength
 #       ) %>%
 #     arrange(Time)
-#   
+# 
 #   # Keep milliseconds data
 #   options("digits.secs"=6)
-#   
+# 
 #   # Create matrix with each well having its own column
 #   wideEvents <- timeLengthTypeWell %>%
-#     tidyr::spread(boutWell, boutLength, fill=NA)
+#     tidyr::spread(boutWell, boutLength, fill=NA) %>%
+#     tidyr::separate(Time, c("Date", "Time"), sep = " ")
 #   
+#   splitWideEvents <- wideEvents %>%
+#     dplyr::group_split(boutType)
+#   
+#   excelSheets <- list('AllEvents' = wideEvents, 'LegEvents' = splitWideEvents[[1]],
+#                       'ProbEvents' = splitWideEvents[[2]])
+#   
+#   openxlsx::write.xlsx(excelSheets, file = "practiceEditedEvents.xlsx")
+  

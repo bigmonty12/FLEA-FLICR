@@ -111,9 +111,16 @@ wellEncodedTimeEvents <- reactive({
   
   # Create matrix with each well having its own column
   wideEvents <- timeLengthTypeWell %>%
-    tidyr::spread(boutWell, boutLength, fill=NA)
+    tidyr::spread(boutWell, boutLength, fill=NA) %>%
+    tidyr::separate(Time, c("Date", "Time"), sep = " ")
   
-  wideEvents
+  splitWideEvents <- wideEvents %>%
+    dplyr::group_split(boutType)
+  
+  excelSheets <- list('AllEvents' = wideEvents, 'LegEvents' = splitWideEvents[[1]],
+                      'ProbEvents' = splitWideEvents[[2]])
+  
+  excelSheets
 })
 
 analyzedEvents <- reactive({
